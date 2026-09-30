@@ -1,0 +1,159 @@
+{% macro runs(paragraph) %}{% for run in paragraph %}{% if run.bold %}<strong>{{ run.text }}</strong>{% else %}{{ run.text }}{% endif %}{% endfor %}{% endmacro %}
+{% macro link(item) %}{% if item.url %}<a href="{{ item.url }}">{{ item.text }}</a>{% else %}{{ item.text }}{% endif %}{% endmacro %}
+{% macro joined(items) %}{% for item in items %}{% if not loop.first %}<span class="sep">{{ separator }}</span>{% endif %}{{ caller(item) }}{% endfor %}{% endmacro %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ view.document_title }}</title>
+<meta name="author" content="{{ view.full_name }}">
+<style>
+@font-face { font-family: "Carlito"; src: url("fonts/Carlito-Regular.ttf"); font-weight: 400; font-style: normal; }
+@font-face { font-family: "Carlito"; src: url("fonts/Carlito-Bold.ttf"); font-weight: 700; font-style: normal; }
+@font-face { font-family: "Carlito"; src: url("fonts/Carlito-Italic.ttf"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Carlito"; src: url("fonts/Carlito-BoldItalic.ttf"); font-weight: 700; font-style: italic; }
+
+@page {
+  size: {{ view.page.css_name }};
+  margin: {{ style.margin_y_in }}in {{ style.margin_x_in }}in;
+}
+
+:root {
+  --text: #{{ style.text_color }};
+  --link: #{{ style.link(view.ats_mode) }};
+  --muted: #{{ style.muted(view.ats_mode) }};
+}
+
+html {
+  font-family: "Carlito", "Calibri", "DejaVu Sans", sans-serif;
+  font-size: {{ style.body_pt }}pt;
+  line-height: {{ style.css_line_height }};
+  color: var(--text);
+  background: #fff;
+}
+
+body { margin: 0; }
+
+@media screen {
+  body {
+    box-sizing: border-box;
+    width: {{ view.page.width_in }}in;
+    min-height: {{ view.page.height_in }}in;
+    margin: 0 auto;
+    padding: {{ style.margin_y_in }}in {{ style.margin_x_in }}in;
+  }
+}
+
+p, ul { margin: 0; }
+a { color: var(--link); text-decoration: {{ "none" if view.ats_mode else "underline" }}; }
+.sep { white-space: pre-wrap; }
+
+h1 {
+  margin: 0 0 {{ style.name_after_pt }}pt;
+  font-size: {{ style.name_pt }}pt;
+  font-weight: 700;
+  text-align: center;
+}
+
+.contact {
+  margin-bottom: {{ style.contact_after_pt }}pt;
+  font-size: {{ style.contact_pt }}pt;
+  text-align: center;
+}
+
+h2 {
+  margin: {{ style.heading_before_pt }}pt 0 {{ style.heading_after_pt }}pt;
+  padding-bottom: 1pt;
+  border-bottom: {{ style.heading_border_pt }}pt solid var(--text);
+  font-size: {{ style.heading_pt }}pt;
+  font-weight: 700;
+  break-after: avoid;
+}
+
+.paragraph { margin-bottom: {{ style.paragraph_after_pt }}pt; }
+
+.entry { margin-top: {{ style.entry_before_pt }}pt; }
+h2 + .entry { margin-top: 0; }
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12pt;
+  margin-bottom: {{ style.line_after_pt }}pt;
+  break-after: avoid;
+}
+.row .right { flex: none; text-align: right; }
+
+.entry-title { font-size: {{ style.entry_title_pt }}pt; font-weight: 700; }
+.entry-subtitle { font-style: italic; }
+.meta { margin-bottom: {{ style.line_after_pt }}pt; break-after: avoid; color: var(--muted); font-size: {{ style.meta_pt }}pt; font-style: italic; }
+.entry-link { margin-bottom: {{ style.line_after_pt }}pt; break-after: avoid; }
+
+ul { padding-left: {{ style.bullet_indent_in }}in; list-style: none; }
+li { margin: {{ style.bullet_gap_pt }}pt 0; break-inside: avoid; }
+/* Inline marker keeps each bullet next to its text in the PDF content stream (ATS reading order). */
+li::before {
+  content: "\2022";
+  display: inline-block;
+  width: {{ style.bullet_indent_in }}in;
+  margin-left: -{{ style.bullet_indent_in }}in;
+}
+
+.skill { margin-bottom: {{ style.line_after_pt }}pt; }
+</style>
+</head>
+<body>
+<header>
+  <h1>{{ view.full_name }}</h1>
+  <p class="contact">{% call(item) joined(view.contact) %}{{ link(item) }}{% endcall %}</p>
+</header>
+{% for section in view.sections %}
+<section>
+  <h2>{{ section.title }}</h2>
+  {% set block = section.block %}
+  {% if block.kind == "text" %}
+    {% for paragraph in block.paragraphs %}
+  <p class="paragraph">{{ runs(paragraph) }}</p>
+    {% endfor %}
+  {% elif block.kind == "entries" %}
+    {% for entry in block.entries %}
+  <div class="entry">
+    <div class="row"><span class="entry-title">{{ entry.title }}</span>{% if entry.title_right %}<span class="right">{{ entry.title_right }}</span>{% endif %}</div>
+      {% if entry.has_subtitle_line %}
+    <div class="row"><span class="entry-subtitle">{{ entry.subtitle or "" }}</span>{% if entry.subtitle_right %}<span class="right">{{ entry.subtitle_right }}</span>{% endif %}</div>
+      {% endif %}
+      {% if entry.meta %}
+    <p class="meta">{{ entry.meta }}</p>
+      {% endif %}
+      {% if entry.link %}
+    <p class="entry-link">{{ link(entry.link) }}</p>
+      {% endif %}
+      {% for paragraph in entry.description %}
+    <p class="paragraph">{{ runs(paragraph) }}</p>
+      {% endfor %}
+      {% if entry.bullets %}
+    <ul>
+        {% for bullet in entry.bullets %}
+      <li>{{ runs(bullet) }}</li>
+        {% endfor %}
+    </ul>
+      {% endif %}
+  </div>
+    {% endfor %}
+  {% elif block.kind == "skills" %}
+    {% for label, items in block.groups %}
+  <p class="skill"><strong>{{ label }}:</strong> {{ items }}</p>
+    {% endfor %}
+  {% elif block.kind == "bullets" %}
+  <ul>
+    {% for item in block.items %}
+    <li>{{ runs(item) }}</li>
+    {% endfor %}
+  </ul>
+  {% elif block.kind == "inline" %}
+  <p>{% call(item) joined(block.items) %}{{ item }}{% endcall %}</p>
+  {% endif %}
+</section>
+{% endfor %}
+</body>
+</html>

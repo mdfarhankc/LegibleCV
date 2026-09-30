@@ -1,0 +1,16 @@
+# Rules for the whole repo. Each app folder ignores its own build artifacts.
+
+# Env files (examples are committed)
+.env
+.env.*
+!.env.example
+
+# My local sample resumes
+/*.docx
+/*.pdf
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

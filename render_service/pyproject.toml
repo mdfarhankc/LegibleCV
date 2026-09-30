@@ -1,0 +1,38 @@
+[project]
+name = "render-service"
+version = "0.1.0"
+description = "Renders resumes to HTML, PDF, and DOCX."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+  "fastapi>=0.142.2",
+  "jinja2>=3.1.6",
+  "pydantic-settings>=2.15.0",
+  "pydantic[email]>=2.13.5",
+  "pyjwt[crypto]>=2.15.1",
+  "python-docx>=1.2.0",
+  "uvicorn[standard]>=0.54.0",
+  "weasyprint>=70.0",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28.1",
+  "pypdf>=6.19.0",
+  "pytest>=9.1.1",
+  "ruff>=0.16.9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.uv]
+package = false

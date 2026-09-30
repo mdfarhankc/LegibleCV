@@ -1,0 +1,15 @@
+services:
+  render-service:
+    build:
+      context: ./render_service
+      target: dev
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      AUTH_DISABLED: "true"
+      ALLOWED_ORIGINS: http://localhost:3000
+      # Bind mounts from Windows/macOS hosts do not emit file events reliably.
+      WATCHFILES_FORCE_POLLING: "true"
+    volumes:
+      - ./render_service:/app

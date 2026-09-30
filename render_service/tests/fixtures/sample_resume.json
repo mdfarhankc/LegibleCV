@@ -1,0 +1,140 @@
+{
+  "full_name": "ALEX MORGAN",
+  "email": "alex.morgan@example.com",
+  "phone": "+1-555-0100",
+  "location": "Springfield, IL, US",
+  "links": [
+    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/alex-morgan-example" },
+    { "label": "GitHub", "url": "https://github.com/alex-morgan-example" }
+  ],
+  "sections": [
+    {
+      "type": "text",
+      "id": "summary",
+      "title": "Professional Summary",
+      "content": "Versatile Python Full-Stack Developer with 3+ years of professional experience building scalable web applications using Python, FastAPI, Django, and Flask. Experienced with React and TypeScript on the frontend. Skilled in PostgreSQL, MongoDB, Redis, Docker, Git, and collaborative development. Passionate about delivering high-quality, end-to-end software solutions."
+    },
+    {
+      "type": "entries",
+      "id": "experience",
+      "title": "Work Experience",
+      "items": [
+        {
+          "title": "NORTHWIND SYSTEMS LLC",
+          "subtitle": "Python Developer",
+          "location": "Springfield, IL | Remote",
+          "start": "MAR 2023",
+          "is_current": true,
+          "bullets": [
+            "Architected and developed modular ERP backend services handling student lifecycle management, multi-stage workflow engines, and financial transaction processing for enterprise clients.",
+            "Designed and implemented RESTful APIs using **FastAPI** and **Django**, ensuring secure, scalable, and high-performance backend services.",
+            "Optimized **PostgreSQL** and **MongoDB** databases through efficient schema design, indexing, and query tuning, improving overall system performance.",
+            "Collaborated with frontend teams to integrate **Flutter** and **React** applications with backend APIs, enabling seamless web and mobile experiences.",
+            "Containerized applications and automated deployments using **Docker**, enhancing development efficiency and environment consistency.",
+            "Implemented comprehensive unit and integration testing using **Pytest**, ensuring code quality, reliability, and early detection of regressions.",
+            "Contributed to code reviews, documentation, and version control workflows, maintaining project scalability and adherence to coding standards."
+          ]
+        },
+        {
+          "title": "Contoso Learning Labs",
+          "subtitle": "Python Full Stack Developer Intern",
+          "location": "Shelbyville, IL, US",
+          "start": "JUNE 2022",
+          "end": "JAN 2023",
+          "bullets": [
+            "Developed responsive web applications using **Django** and **Flask**, adhering to modern UI/UX design principles.",
+            "Built and maintained RESTful APIs using **Django REST Framework (DRF)** and **Flask-RESTful**, enabling efficient client-server communication.",
+            "Enhanced application performance through code refactoring, debugging, and query tuning, resulting in smoother user experiences.",
+            "Implemented automated unit tests with **Pytest** and **unittest**, improving overall test coverage and ensuring reliable feature releases.",
+            "Designed authentication and session management modules, reinforcing security and reusability across multiple projects."
+          ]
+        }
+      ]
+    },
+    {
+      "type": "entries",
+      "id": "projects",
+      "title": "Projects",
+      "items": [
+        {
+          "title": "AuthKit - Authentication & Authorization Library",
+          "subtitle": "Open-source library on PyPI",
+          "meta": "FastAPI, Pydantic, SQLModel, SQLAlchemy, Alembic, PyJWT, Argon2, Redis, WebAuthn, OAuth2, pytest-asyncio",
+          "link": { "label": "GitHub", "url": "https://github.com/alex-morgan-example/authkit" },
+          "bullets": [
+            "Authored and published an async auth library shipping **JWT access/refresh tokens** with atomic rotation, reuse detection with family revocation, and **Argon2id** password hashing with transparent rehashing.",
+            "Implemented **OAuth2** social login with verified-email gating and **WebAuthn/Passkey** passwordless authentication with user-verification enforcement and sign-count clone detection.",
+            "Built role-based access control via typed **dependencies** and dependency factories for declarative route protection.",
+            "Engineered opt-in adapter mixins and lazily registered model submodules, with pluggable **Redis** and in-memory backends for token blacklist, account lockout, and rate limiting.",
+            "Fully type-annotated with a **PEP 561** marker so consumers get real types in mypy, pyright, and IDEs.",
+            "Designed for extensibility through typed event hooks and a constructor-level custom JWT-claims builder.",
+            "Shipped modular routers, CSRF and security-headers middleware; covered by **189 async tests** on Python 3.10-3.14 with OIDC-based publishing."
+          ]
+        },
+        {
+          "title": "Ledger - Personal Finance Management",
+          "subtitle": "Full-Stack Personal Project",
+          "meta": "FastAPI, SQLModel, PostgreSQL, Alembic, Redis, React 19, TypeScript, Vite, TanStack Router/Query/Form, Zustand, Zod, Tailwind CSS, shadcn/ui",
+          "link": { "label": "GitHub", "url": "https://github.com/alex-morgan-example/ledger" },
+          "bullets": [
+            "Built a full-stack personal finance app (**FastAPI** backend + **React 19** / Vite / TypeScript frontend) with email/password, OAuth, passkeys, email verification, and token rotation.",
+            "Modeled the finance domain with multi-type accounts, income/expense/transfer transactions with atomic balance updates and row locking, hierarchical categories, budgets, and an immutable audit log.",
+            "Designed async **SQLModel** models with UUID v7 IDs and reusable mixins, Alembic migrations, and a generic service layer with audit logging.",
+            "Integrated **TanStack Router** with **TanStack Query** via route loaders for prefetched, type-safe navigation and URL-backed filters.",
+            "Architected a shared HTTP interceptor with a single-flight refresh promise to prevent concurrent token-refresh races, and moved auth state to a persisted **Zustand** store.",
+            "Crafted a responsive UI with per-user currency formatting, light/dark theme, cursor-paginated lists, skeletons, and empty states."
+          ]
+        }
+      ]
+    },
+    {
+      "type": "skills",
+      "id": "skills",
+      "title": "Skills",
+      "groups": [
+        { "label": "Backend", "items": ["Python (FastAPI, Django, Flask)"] },
+        { "label": "Frontend", "items": ["React", "TypeScript"] },
+        { "label": "Databases", "items": ["PostgreSQL", "MySQL", "MongoDB", "Redis"] },
+        { "label": "Technologies", "items": ["Docker", "Git", "Celery", "WebSockets"] },
+        { "label": "Third-Party Integrations", "items": ["WhatsApp Cloud", "Twilio", "Google Document AI", "Firebase (FCM)", "Google Maps API"] },
+        { "label": "Areas of Interest", "items": ["Backend Development", "Web Development", "Mobile App Development"] }
+      ]
+    },
+    {
+      "type": "entries",
+      "id": "education",
+      "title": "Education",
+      "items": [
+        {
+          "title": "STATE UNIVERSITY, SPRINGFIELD",
+          "subtitle": "Bachelor of Computer Applications",
+          "start": "2019",
+          "end": "2022"
+        }
+      ]
+    },
+    {
+      "type": "entries",
+      "id": "awards",
+      "title": "Awards & Achievements",
+      "items": [
+        {
+          "title": "Best Performer - 2025",
+          "subtitle": "Northwind Systems LLC",
+          "start": "2025",
+          "description": "Recognized for consistently demonstrating technical excellence, problem-solving expertise, and delivering high-impact, production-ready applications."
+        }
+      ]
+    },
+    {
+      "type": "inline",
+      "id": "languages",
+      "title": "Languages",
+      "items": [
+        "English - Native",
+        "Spanish - Full Professional Proficiency",
+        "French - Professional Working Proficiency"
+      ]
+    }
+  ]
+}
