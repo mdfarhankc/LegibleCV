@@ -1,11 +1,12 @@
-import { Check, FileText, FileType, X } from "lucide-react";
+import { ArrowRight, Check, FileText, FileType, X } from "lucide-react";
 import Link from "next/link";
 
 import { resumeFont } from "@/app/fonts";
 import { AtsDemo } from "@/components/landing/ats-demo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { LOGIN_PATH, SIGNUP_PATH } from "@/lib/auth/routes";
+import { getUser } from "@/lib/auth/dal";
+import { DEFAULT_SIGNED_IN_PATH, LOGIN_PATH, SIGNUP_PATH } from "@/lib/auth/routes";
 
 const HERO_FACTS = ["Selectable text", "One-column layout", "PDF and Word"];
 
@@ -74,8 +75,16 @@ const sectionClass = "mx-auto w-full max-w-6xl px-5 py-24";
 const sectionTitleClass =
   "max-w-2xl font-heading text-3xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-[2.75rem]";
 const ctaClass = "h-12 px-6 text-base";
+const arrowClass =
+  "transition-transform duration-200 motion-safe:group-hover/button:translate-x-1";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const signedIn = (await getUser()) !== null;
+  // One main action everywhere on the page: start for visitors, continue for signed-in users.
+  const cta = signedIn
+    ? { href: DEFAULT_SIGNED_IN_PATH, label: "Dashboard" }
+    : { href: SIGNUP_PATH, label: "Create your resume" };
+
   return (
     <div className={`${resumeFont.variable} flex flex-1 flex-col`}>
       <header className="sticky top-0 z-40 border-b border-transparent bg-background/80 backdrop-blur-md">
@@ -84,15 +93,18 @@ export default function HomePage() {
             MakeMyResume
           </Link>
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" nativeButton={false} render={<Link href={LOGIN_PATH} />}>
-              Log in
-            </Button>
+            {!signedIn && (
+              <Button variant="ghost" nativeButton={false} render={<Link href={LOGIN_PATH} />}>
+                Log in
+              </Button>
+            )}
             <Button
-              className="hidden sm:inline-flex"
+              className={signedIn ? undefined : "hidden sm:inline-flex"}
               nativeButton={false}
-              render={<Link href={SIGNUP_PATH} />}
+              render={<Link href={cta.href} />}
             >
-              Create your resume
+              {cta.label}
+              <ArrowRight className={arrowClass} aria-hidden="true" />
             </Button>
             <ThemeToggle />
           </div>
@@ -121,19 +133,22 @@ export default function HomePage() {
                   size="lg"
                   className={ctaClass}
                   nativeButton={false}
-                  render={<Link href={SIGNUP_PATH} />}
+                  render={<Link href={cta.href} />}
                 >
-                  Create your resume
+                  {cta.label}
+                  <ArrowRight className={arrowClass} aria-hidden="true" />
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className={ctaClass}
-                  nativeButton={false}
-                  render={<Link href={LOGIN_PATH} />}
-                >
-                  Log in
-                </Button>
+                {!signedIn && (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className={ctaClass}
+                    nativeButton={false}
+                    render={<Link href={LOGIN_PATH} />}
+                  >
+                    Log in
+                  </Button>
+                )}
               </div>
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 {HERO_FACTS.map((fact) => (
@@ -244,9 +259,10 @@ export default function HomePage() {
               size="lg"
               className={`${ctaClass} bg-white text-[#0046b4] hover:bg-white/90`}
               nativeButton={false}
-              render={<Link href={SIGNUP_PATH} />}
+              render={<Link href={cta.href} />}
             >
-              Create your resume
+              {cta.label}
+              <ArrowRight className={arrowClass} aria-hidden="true" />
             </Button>
           </div>
         </section>
@@ -257,12 +273,20 @@ export default function HomePage() {
           <span className="font-heading text-base font-semibold text-foreground">MakeMyResume</span>
           <span>Resumes that software can read.</span>
           <nav className="flex gap-6 sm:ml-auto">
-            <Link href={LOGIN_PATH} className="hover:text-foreground">
-              Log in
-            </Link>
-            <Link href={SIGNUP_PATH} className="hover:text-foreground">
-              Sign up
-            </Link>
+            {signedIn ? (
+              <Link href={DEFAULT_SIGNED_IN_PATH} className="hover:text-foreground">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href={LOGIN_PATH} className="hover:text-foreground">
+                  Log in
+                </Link>
+                <Link href={SIGNUP_PATH} className="hover:text-foreground">
+                  Sign up
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </footer>
