@@ -1,0 +1,67 @@
+{# Shared pieces for the two-column templates. Each template styles these classes itself. #}
+{% macro runs(paragraph) %}{% for run in paragraph %}{% if run.bold %}<strong>{{ run.text }}</strong>{% else %}{{ run.text }}{% endif %}{% endfor %}{% endmacro %}
+{% macro link(item) %}{% if item.url %}<a href="{{ item.url }}">{{ item.text }}</a>{% else %}{{ item.text }}{% endif %}{% endmacro %}
+
+{% macro entry(item) %}
+<div class="entry">
+  <div class="row"><span class="entry-title">{{ item.title }}</span>{% if item.dates %}<span class="dates">{{ item.dates }}</span>{% endif %}</div>
+  {% if item.subtitle or item.location %}
+  <p class="entry-subtitle">{{ [item.subtitle, item.location] | select | join(", ") }}</p>
+  {% endif %}
+  {% if item.meta %}
+  <p class="meta">{{ item.meta }}</p>
+  {% endif %}
+  {% if item.link %}
+  <p class="entry-link">{{ link(item.link) }}</p>
+  {% endif %}
+  {% for paragraph in item.description %}
+  <p class="paragraph">{{ runs(paragraph) }}</p>
+  {% endfor %}
+  {% if item.bullets %}
+  <ul>
+    {% for bullet in item.bullets %}
+    <li>{{ runs(bullet) }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# `stacked` is the narrow-column form: label above value, list items one per line. #}
+{% macro section(item, stacked) %}
+<section>
+  <h2>{{ item.heading }}</h2>
+  {% set block = item.block %}
+  {% if block.kind == "text" %}
+    {% for paragraph in block.paragraphs %}
+  <p class="paragraph">{{ runs(paragraph) }}</p>
+    {% endfor %}
+  {% elif block.kind == "entries" %}
+    {% for one in block.entries %}
+  {{ entry(one) }}
+    {% endfor %}
+  {% elif block.kind == "skills" %}
+    {% for label, items in block.groups %}
+      {% if stacked %}
+  <div class="pair"><p class="pair-label">{{ label }}</p><p class="pair-value">{{ items }}</p></div>
+      {% else %}
+  <p class="skill"><strong>{{ label }}:</strong> {{ items }}</p>
+      {% endif %}
+    {% endfor %}
+  {% elif block.kind == "bullets" %}
+  <ul>
+    {% for bullet in block.items %}
+    <li>{{ runs(bullet) }}</li>
+    {% endfor %}
+  </ul>
+  {% elif block.kind == "inline" %}
+    {% if stacked %}
+      {% for text in block.items %}
+  <p class="line">{{ text }}</p>
+      {% endfor %}
+    {% else %}
+  <p>{{ block.items | join("  |  ") }}</p>
+    {% endif %}
+  {% endif %}
+</section>
+{% endmacro %}

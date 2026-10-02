@@ -4,7 +4,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 from weasyprint import HTML
 
 from app.core.url_fetcher import FontOnlyURLFetcher
-from app.rendering.styles import CLASSIC
+from app.rendering.styles import BANNER, CLASSIC, SIDE_PANEL
 from app.rendering.view import SEPARATOR, build_view
 from app.schemas.resume import Resume
 
@@ -12,7 +12,7 @@ _APP_DIR = Path(__file__).resolve().parent.parent
 _STATIC_DIR = _APP_DIR / "static"
 FONTS_DIR = _STATIC_DIR / "fonts"
 
-_TEMPLATE_STYLES = {"classic": CLASSIC}
+_TEMPLATE_STYLES = {"classic": CLASSIC, "sidepanel": SIDE_PANEL, "banner": BANNER}
 
 _env = Environment(
     loader=FileSystemLoader(_APP_DIR / "templates"),
@@ -32,10 +32,23 @@ def render_html(resume: Resume) -> str:
     )
 
 
-def render_pdf(resume: Resume) -> bytes:
-    document = HTML(
-        string=render_html(resume),
+def _document(html: str) -> HTML:
+    return HTML(
+        string=html,
         base_url=f"{_STATIC_DIR.as_uri()}/",
         url_fetcher=FontOnlyURLFetcher(FONTS_DIR),
     )
-    return document.write_pdf()
+
+
+def render_pdf(resume: Resume) -> bytes:
+    return _document(render_html(resume)).write_pdf()
+
+
+def render_preview(resume: Resume) -> tuple[str, int]:
+    """The preview HTML and the number of pages the PDF will have.
+
+    The browser shows the HTML as one continuous page, so the page count has to come from
+    the PDF layout.
+    """
+    html = render_html(resume)
+    return html, len(_document(html).render().pages)

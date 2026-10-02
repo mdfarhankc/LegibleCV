@@ -42,6 +42,9 @@ class EntryView:
     link: LinkText | None
     description: list[Paragraph]
     bullets: list[Paragraph]
+    # Unarranged, for templates that lay the entry out differently from classic.
+    location: str | None
+    dates: str | None
 
     @property
     def has_subtitle_line(self) -> bool:
@@ -83,8 +86,13 @@ type Block = TextBlock | EntriesBlock | SkillsBlock | BulletsBlock | InlineBlock
 
 @dataclass(frozen=True, slots=True)
 class SectionView:
+    # Uppercased, as classic and the DOCX print it.
     title: str
+    # As the user typed it.
+    heading: str
     block: Block
+    # Side column on two-column templates.
+    side: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +104,14 @@ class ResumeView:
     page: PageSize
 
     @property
+    def main_sections(self) -> list[SectionView]:
+        return [section for section in self.sections if not section.side]
+
+    @property
+    def side_sections(self) -> list[SectionView]:
+        return [section for section in self.sections if section.side]
+
+    @property
     def document_title(self) -> str:
         return f"{self.full_name} - Resume"
 
@@ -103,6 +119,11 @@ class ResumeView:
 def url_text(url: HttpUrl) -> str:
     text = str(url)
     return text.removesuffix("/") if url.path in (None, "/") else text
+
+
+def short_url(url: HttpUrl) -> str:
+    """The address as people write it: no scheme, no leading www."""
+    return url_text(url).split("://", 1)[-1].removeprefix("www.")
 
 
 def date_range(entry: Entry) -> str | None:
@@ -125,6 +146,8 @@ def _entry_view(entry: Entry) -> EntryView:
         link=_entry_link(entry.link),
         description=parse_paragraphs(entry.description),
         bullets=[parse_runs(bullet) for bullet in entry.bullets],
+        location=entry.location,
+        dates=dates,
     )
 
 
@@ -151,7 +174,17 @@ def _block(section: Section) -> Block | None:
             return InlineBlock(list(items)) if items else None
 
 
-def _contact(resume: Resume) -> list[LinkText]:
+# Short lists read well in a narrow column; long prose and dated entries need the wide one.
+_SIDE_BY_DEFAULT = (SkillsSection, BulletsSection, InlineSection)
+
+
+def _is_side(section: Section) -> bool:
+    if section.placement == "auto":
+        return isinstance(section, _SIDE_BY_DEFAULT)
+    return section.placement == "side"
+
+
+def _contact(resume: Resume, *, print_addresses: bool) -> list[LinkText]:
     items: list[LinkText] = []
     if resume.location:
         items.append(LinkText(resume.location))
@@ -159,22 +192,27 @@ def _contact(resume: Resume) -> list[LinkText]:
     if resume.phone:
         items.append(LinkText(resume.phone))
     for link in resume.links:
-        url = url_text(link.url)
-        # ATS parsers often drop hyperlink targets, so print the URL itself.
-        items.append(LinkText(url if resume.options.ats_mode else link.label, url))
+        # ATS parsers often drop hyperlink targets, so the address is printed as text there.
+        # The two-column templates list contact details one per line, where a bare label
+        # ("LinkedIn") says nothing, so they print the address too.
+        text = short_url(link.url) if print_addresses else link.label
+        items.append(LinkText(text, url_text(link.url)))
     return items
 
 
 def build_view(resume: Resume) -> ResumeView:
+    classic = resume.options.template == "classic"
+    # Only classic has an ATS variant.
+    ats_mode = resume.options.ats_mode and classic
     sections = [
-        SectionView(section.title.upper(), block)
+        SectionView(section.title.upper(), section.title, block, _is_side(section))
         for section in resume.sections
         if (block := _block(section)) is not None
     ]
     return ResumeView(
         full_name=resume.full_name,
-        contact=_contact(resume),
+        contact=_contact(resume, print_addresses=ats_mode or not classic),
         sections=sections,
-        ats_mode=resume.options.ats_mode,
+        ats_mode=ats_mode,
         page=PAGE_SIZES[resume.options.page_size],
     )

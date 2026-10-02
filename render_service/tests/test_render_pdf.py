@@ -55,4 +55,5 @@ def test_page_size(resume_data: dict[str, Any], page_size: str, expected: tuple[
 def test_ats_mode_prints_full_urls(resume_data: dict[str, Any]) -> None:
     resume_data["options"] = {"ats_mode": True}
     text = pdf_text(render_pdf(Resume.model_validate(resume_data)))
-    assert "https://www.linkedin.com/in/alex-morgan-example" in text
+    assert "linkedin.com/in/alex-morgan-example" in text
+    assert "https://www.linkedin.com" not in text

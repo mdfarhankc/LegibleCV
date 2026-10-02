@@ -38,7 +38,10 @@ def test_links_are_hyperlinked(resume: Resume) -> None:
 def test_ats_mode_prints_urls_and_uses_black_links(resume_data: dict[str, Any]) -> None:
     resume_data["options"] = {"ats_mode": True}
     html = render_html(Resume.model_validate(resume_data))
-    assert ">https://github.com/alex-morgan-example</a>" in html
+    assert (
+        '<a href="https://github.com/alex-morgan-example">github.com/alex-morgan-example</a>'
+        in html
+    )
     assert "--link: #000000;" in html
     assert "--muted: #000000;" in html
 

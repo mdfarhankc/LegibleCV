@@ -1,0 +1,142 @@
+{% import "_blocks.html" as blocks %}
+{% set side = style.side_width_pct %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ view.document_title }}</title>
+<meta name="author" content="{{ view.full_name }}">
+<style>
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Light.ttf"); font-weight: 300; font-style: normal; }
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Regular.ttf"); font-weight: 400; font-style: normal; }
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Italic.ttf"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Medium.ttf"); font-weight: 500; font-style: normal; }
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-SemiBold.ttf"); font-weight: 600; font-style: normal; }
+
+:root {
+  --text: #{{ style.text_color }};
+  --muted: #{{ style.muted_color }};
+  --rule: #{{ style.rule_color }};
+  --band: #{{ style.band_color }};
+}
+
+@page {
+  size: {{ view.page.css_name }};
+  margin: {{ style.margin_y_in }}in 0;
+}
+/* The band touches the top edge of the first page. */
+@page :first { margin-top: 0; }
+
+html {
+  font-family: "{{ style.font }}", "Segoe UI", "DejaVu Sans", sans-serif;
+  font-size: {{ style.body_pt }}pt;
+  line-height: {{ style.line_height }};
+  color: var(--text);
+  background: #fff;
+}
+body { margin: 0; }
+
+@media screen {
+  body {
+    box-sizing: border-box;
+    width: {{ view.page.width_in }}in;
+    min-height: {{ view.page.height_in }}in;
+    margin: 0 auto;
+    padding-bottom: {{ style.margin_y_in }}in;
+  }
+}
+
+p, ul, h1, h2 { margin: 0; }
+a { color: inherit; text-decoration: none; }
+strong { font-weight: 600; }
+
+.band {
+  padding: 0.6in {{ style.edge_pad_in }}in 0.5in;
+  background: var(--band);
+  color: #{{ style.band_text_color }};
+}
+h1 {
+  font-size: {{ style.name_pt }}pt;
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.contact {
+  margin-top: 8pt;
+  color: #{{ style.band_muted_color }};
+  font-size: {{ style.small_pt + 0.5 }}pt;
+}
+.contact span { margin-right: 14pt; white-space: nowrap; }
+
+/* The side column floats so the main column, usually the longer one, flows page to page. */
+.side {
+  float: right;
+  box-sizing: border-box;
+  width: {{ side }}%;
+  padding: 0.3in {{ style.edge_pad_in }}in 0 {{ style.gutter_in }}in;
+}
+.main {
+  margin-right: {{ side }}%;
+  padding: 0.3in {{ style.gutter_in }}in 0 {{ style.edge_pad_in }}in;
+  border-right: 0.5pt solid var(--rule);
+}
+
+section { padding-bottom: 12pt; }
+section + section { padding-top: 12pt; border-top: 0.5pt solid var(--rule); }
+h2 {
+  margin-bottom: 8pt;
+  font-size: {{ style.heading_pt }}pt;
+  font-weight: 300;
+  line-height: 1.2;
+  break-after: avoid;
+}
+
+.paragraph { margin-bottom: 4pt; }
+
+.entry { margin-top: 10pt; }
+h2 + .entry { margin-top: 0; }
+.row { display: flex; justify-content: space-between; gap: 10pt; break-after: avoid; }
+.entry-title { font-weight: 600; }
+.dates { flex: none; }
+.entry-subtitle { color: var(--muted); break-after: avoid; }
+.meta { font-style: italic; break-after: avoid; }
+.entry-link { color: var(--muted); font-size: {{ style.small_pt }}pt; break-after: avoid; }
+
+ul { padding-left: 0.18in; list-style: none; }
+li { margin: 1pt 0; break-inside: avoid; }
+li::before {
+  content: "\2022";
+  display: inline-block;
+  width: 0.18in;
+  margin-left: -0.18in;
+}
+
+.skill { margin-bottom: 2pt; }
+
+/* Narrow column */
+.side .line { margin-bottom: 6pt; }
+.side .pair { margin-bottom: 8pt; }
+.side .pair-label { color: var(--muted); }
+.side ul { padding-left: 0; }
+.side li { margin: 0 0 6pt; }
+.side li::before { content: none; }
+</style>
+</head>
+<body>
+<header class="band">
+  <h1>{{ view.full_name }}</h1>
+  <p class="contact">{% for item in view.contact %}<span>{{ blocks.link(item) }}</span> {% endfor %}</p>
+</header>
+<aside class="side">
+  {% for item in view.side_sections %}
+  {{ blocks.section(item, true) }}
+  {% endfor %}
+</aside>
+<main class="main">
+  {% for item in view.main_sections %}
+  {{ blocks.section(item, false) }}
+  {% endfor %}
+</main>
+</body>
+</html>

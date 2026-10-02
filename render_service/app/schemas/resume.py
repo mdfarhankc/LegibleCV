@@ -43,38 +43,38 @@ class SkillGroup(Model):
     items: ShortItems = []
 
 
-class TextSection(Model):
-    type: Literal["text"] = "text"
+Placement = Literal["auto", "main", "side"]
+
+
+class SectionBase(Model):
     id: Id
     title: Label
+    # Which column the section goes in on two-column templates. Classic ignores it.
+    placement: Placement = "auto"
+
+
+class TextSection(SectionBase):
+    type: Literal["text"] = "text"
     content: OptionalLongText = None
 
 
-class EntriesSection(Model):
+class EntriesSection(SectionBase):
     type: Literal["entries"] = "entries"
-    id: Id
-    title: Label
     items: Annotated[list[Entry], Field(max_length=30)] = []
 
 
-class SkillsSection(Model):
+class SkillsSection(SectionBase):
     type: Literal["skills"] = "skills"
-    id: Id
-    title: Label
     groups: Annotated[list[SkillGroup], Field(max_length=20)] = []
 
 
-class BulletsSection(Model):
+class BulletsSection(SectionBase):
     type: Literal["bullets"] = "bullets"
-    id: Id
-    title: Label
     items: Bullets = []
 
 
-class InlineSection(Model):
+class InlineSection(SectionBase):
     type: Literal["inline"] = "inline"
-    id: Id
-    title: Label
     items: ShortItems = []
 
 
@@ -84,8 +84,12 @@ Section = Annotated[
 ]
 
 
+Template = Literal["classic", "sidepanel", "banner"]
+
+
 class ResumeOptions(Model):
-    template: Literal["classic"] = "classic"
+    template: Template = "classic"
+    # Plain text and printed link addresses. Only the classic template has an ATS variant.
     ats_mode: bool = False
     page_size: Literal["A4", "Letter"] = "A4"
 

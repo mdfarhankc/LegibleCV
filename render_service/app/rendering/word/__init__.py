@@ -7,13 +7,12 @@ from app.rendering.view import build_view
 from app.rendering.word.classic import ClassicBuilder
 from app.schemas.resume import Resume
 
-_BUILDERS = {"classic": (ClassicBuilder, CLASSIC)}
-
 
 def render_docx(resume: Resume) -> bytes:
-    builder_cls, style = _BUILDERS[resume.options.template]
+    # Every template gets the classic single-column document. Two columns in Word would need
+    # a table, which is hard to edit and hard for parsers to read.
     document = docx.Document()
-    builder_cls(document, build_view(resume), style).build()
+    ClassicBuilder(document, build_view(resume), CLASSIC).build()
     buffer = BytesIO()
     document.save(buffer)
     return buffer.getvalue()

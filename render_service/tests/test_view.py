@@ -3,7 +3,14 @@ from typing import Any
 import pytest
 from pydantic import HttpUrl
 
-from app.rendering.view import EntriesBlock, InlineBlock, build_view, date_range, url_text
+from app.rendering.view import (
+    EntriesBlock,
+    InlineBlock,
+    build_view,
+    date_range,
+    short_url,
+    url_text,
+)
 from app.schemas.resume import Entry, Resume
 
 
@@ -32,6 +39,19 @@ def test_date_range(fields: dict[str, Any], expected: str | None) -> None:
 )
 def test_url_text(url: str, expected: str) -> None:
     assert url_text(HttpUrl(url)) == expected
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("https://www.linkedin.com/in/alex", "linkedin.com/in/alex"),
+        ("https://github.com/alex/repo", "github.com/alex/repo"),
+        ("http://example.com", "example.com"),
+        ("https://wwwexample.com/", "wwwexample.com"),
+    ],
+)
+def test_short_url(url: str, expected: str) -> None:
+    assert short_url(HttpUrl(url)) == expected
 
 
 def test_entry_with_location_puts_dates_on_subtitle_line(resume: Resume) -> None:
@@ -83,7 +103,8 @@ def test_contact_uses_labels_normally_and_urls_in_ats_mode(resume_data: dict[str
 
     resume_data["options"] = {"ats_mode": True}
     ats = build_view(Resume.model_validate(resume_data)).contact
-    assert ats[3].text == "https://www.linkedin.com/in/alex-morgan-example"
+    assert ats[3].text == "linkedin.com/in/alex-morgan-example"
+    assert ats[3].url == "https://www.linkedin.com/in/alex-morgan-example"
 
 
 def test_contact_skips_missing_optional_fields() -> None:

@@ -74,4 +74,5 @@ def test_user_input_is_plain_text(resume_data: dict[str, Any]) -> None:
 def test_ats_mode_prints_full_urls(resume_data: dict[str, Any]) -> None:
     resume_data["options"] = {"ats_mode": True}
     text = docx_text(render_docx(Resume.model_validate(resume_data)))
-    assert "https://www.linkedin.com/in/alex-morgan-example" in text
+    assert "linkedin.com/in/alex-morgan-example" in text
+    assert "https://www.linkedin.com" not in text

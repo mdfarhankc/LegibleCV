@@ -63,3 +63,56 @@ class ClassicStyle:
 
 
 CLASSIC = ClassicStyle()
+
+
+@dataclass(frozen=True, slots=True)
+class SidePanelStyle:
+    """Tinted left panel with a colored cap for the name."""
+
+    font: str = "Carlito"
+    margin_y_in: float = 0.5
+    panel_width_pct: int = 33
+    panel_pad_in: float = 0.3
+    main_pad_left_in: float = 0.4
+    main_pad_right_in: float = 0.5
+
+    panel_color: str = "eef0f6"
+    cap_color: str = "0d1746"
+    accent_color: str = "1c3faa"
+    text_color: str = "16181d"
+    muted_color: str = "5a6072"
+    rule_color: str = "c9cdd8"
+
+    body_pt: float = 9.5
+    name_pt: float = 16
+    heading_pt: float = 13.5
+    small_pt: float = 8.5
+    line_height: float = 1.38
+
+
+@dataclass(frozen=True, slots=True)
+class BannerStyle:
+    """Dark band across the top, wide main column, narrow side column."""
+
+    font: str = "Poppins"
+    margin_y_in: float = 0.5
+    side_width_pct: int = 32
+    edge_pad_in: float = 0.55
+    gutter_in: float = 0.32
+
+    band_color: str = "2e3443"
+    band_text_color: str = "ffffff"
+    band_muted_color: str = "c3c8d4"
+    text_color: str = "1b1d22"
+    muted_color: str = "7b808c"
+    rule_color: str = "d9dce3"
+
+    body_pt: float = 9
+    name_pt: float = 25
+    heading_pt: float = 14.5
+    small_pt: float = 8
+    line_height: float = 1.45
+
+
+SIDE_PANEL = SidePanelStyle()
+BANNER = BannerStyle()

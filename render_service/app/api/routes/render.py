@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Response
 from fastapi.responses import HTMLResponse
 
 from app.dependencies import get_current_user
-from app.rendering.html import render_html, render_pdf
+from app.rendering.html import render_pdf, render_preview
 from app.rendering.word import render_docx
 from app.schemas.resume import Resume
 
@@ -42,9 +42,13 @@ def _attachment(content: bytes, media_type: str, filename: str) -> Response:
     )
 
 
+PAGE_COUNT_HEADER = "X-Page-Count"
+
+
 @router.post("/preview", response_class=HTMLResponse)
-def render_preview(resume: Resume) -> HTMLResponse:
-    return HTMLResponse(render_html(resume), headers=_NO_STORE)
+def preview(resume: Resume) -> HTMLResponse:
+    html, page_count = render_preview(resume)
+    return HTMLResponse(html, headers={**_NO_STORE, PAGE_COUNT_HEADER: str(page_count)})
 
 
 @router.post(

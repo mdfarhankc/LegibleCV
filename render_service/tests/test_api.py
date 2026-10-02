@@ -1,8 +1,10 @@
 from collections.abc import Iterator
+from io import BytesIO
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pypdf import PdfReader
 
 from app.api.routes.render import DOCX_MEDIA_TYPE, download_filename
 from app.core.security import TokenVerifier
@@ -29,6 +31,23 @@ def test_preview(client: TestClient, resume_data: dict[str, Any]) -> None:
     assert response.headers["content-type"].startswith("text/html")
     assert response.headers["cache-control"] == "no-store"
     assert "<h1>ALEX MORGAN</h1>" in response.text
+
+
+@pytest.mark.parametrize("page_size", ["A4", "Letter"])
+def test_preview_reports_the_pdf_page_count(
+    client: TestClient, resume_data: dict[str, Any], page_size: str
+) -> None:
+    resume_data["options"] = {"page_size": page_size}
+    preview = client.post("/v1/render/preview", json=resume_data)
+    pdf = client.post("/v1/render/pdf", json=resume_data)
+    pdf_pages = len(PdfReader(BytesIO(pdf.content)).pages)
+    assert pdf_pages > 1
+    assert preview.headers["x-page-count"] == str(pdf_pages)
+
+
+def test_preview_of_a_short_resume_is_one_page(client: TestClient) -> None:
+    response = client.post("/v1/render/preview", json={"full_name": "A", "email": "a@example.com"})
+    assert response.headers["x-page-count"] == "1"
 
 
 def test_pdf(client: TestClient, resume_data: dict[str, Any]) -> None:
