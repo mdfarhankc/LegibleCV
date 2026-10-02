@@ -2,10 +2,12 @@
 
 Takes resume JSON and returns an HTML preview, a PDF or a DOCX. It doesn't store anything and has no database access. Requests are authenticated with the Supabase access token.
 
+FastAPI, with WeasyPrint for PDFs and python-docx for Word files.
+
 ## Endpoints
 
 - `GET /health`
-- `POST /v1/render/preview` - HTML for the live preview
+- `POST /v1/render/preview` - HTML for the live preview. The `X-Page-Count` header says how many pages the PDF will have.
 - `POST /v1/render/pdf` - PDF download
 - `POST /v1/render/docx` - Word download
 
@@ -22,6 +24,8 @@ docker compose run --rm render-service pytest
 
 Compose runs with `AUTH_DISABLED=true`, so you don't need a token locally. That flag is rejected outside `ENVIRONMENT=development`.
 
+The container reloads when you change a file.
+
 Linting works outside Docker:
 
 ```bash
@@ -31,19 +35,46 @@ uv run ruff check app tests
 
 ## Config
 
-See `.env.example`. In production you only need `SUPABASE_URL` and `ALLOWED_ORIGINS`.
+See `.env.example`. In production you need `SUPABASE_URL`, which is where the service fetches the keys to verify tokens.
+
+`ALLOWED_ORIGINS` only matters if a browser calls the service directly. The web app calls it from its own server, so it can stay empty there.
 
 ## Production
 
 ```bash
 docker build --target prod -t render-service .
-docker run -p 8080:8080 -e SUPABASE_URL=... -e ALLOWED_ORIGINS=... render-service
+docker run -p 8080:8080 -e SUPABASE_URL=... render-service
 ```
 
-## Adding a template
+## Templates
 
-A template has two parts that must stay in sync: `templates/<name>.html` for HTML/PDF and a builder in `app/rendering/word/` for DOCX. Both read the same view model (`rendering/view.py`) and style tokens (`rendering/styles.py`). Register the name in `ResumeOptions.template` and add it to the ordered-marker tests.
+- `classic` - one column. The only template with an ATS mode.
+- `sidepanel` - a tinted left panel with the name on top.
+- `banner` - a dark band across the top and a narrow right column.
+
+On the two-column templates, each section goes to the main or side column by its `placement`. `auto` puts skills, bullet lists and one-line lists in the side column, and text and entries in the main one.
+
+The Word download uses the classic single-column layout for every template.
+
+To add a template:
+
+1. Put the name in `Template` in `app/schemas/resume.py`.
+2. Add a style class in `rendering/styles.py`.
+3. Add `templates/<name>.html`. Two-column templates can reuse the blocks in `templates/_blocks.html`.
+4. Register the style in `rendering/html.py`.
+5. Add it to the tests in `tests/test_templates.py`.
+
+## How rendering is organized
+
+`rendering/view.py` turns a resume into a view model: what text appears, in what order, which empty parts are left out. The HTML templates and the DOCX builder both read from it, so the PDF and the Word file can't disagree about content.
+
+User text is escaped by Jinja2 and never treated as HTML. Bullets and descriptions support `**bold**` and nothing else.
+
+WeasyPrint fetches every URL a document references. The service gives it a fetcher that only serves the bundled font files, so a resume can't make the server request anything else.
 
 ## Fonts
 
-PDFs use Carlito, a free font with the same metrics as Calibri (license in `app/static/fonts/OFL.txt`). DOCX files use Calibri directly.
+Bundled in `app/static/fonts`, both under the SIL Open Font License:
+
+- Carlito (classic, sidepanel) - same metrics as Calibri. DOCX files use Calibri directly.
+- Poppins (banner).
