@@ -27,7 +27,7 @@ const FILTER_REASONS = [
     problem: "Links hide behind labels",
     detail:
       "A link that says “LinkedIn” can lose its address when the file is converted to plain text.",
-    answer: "ATS mode prints the full address, so your profile survives the conversion.",
+    answer: "ATS mode prints the address itself, so your profile survives the conversion.",
   },
 ];
 
@@ -55,7 +55,7 @@ const FILES = [
       "Selectable, searchable text",
       "Fonts embedded in the file",
       "Working links to your profiles",
-      "ATS mode: black text, addresses written out",
+      "ATS mode: black text, link addresses printed",
     ],
   },
   {
