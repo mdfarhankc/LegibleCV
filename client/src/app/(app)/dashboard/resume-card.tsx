@@ -1,16 +1,21 @@
 "use client";
 
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Copy, MoreHorizontal, Pencil, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { duplicateResume } from "@/lib/resumes/actions";
 import type { ResumePreview } from "@/lib/resumes/preview";
 
 import { DeleteDialog } from "./delete-dialog";
@@ -23,10 +28,38 @@ type ResumeCardProps = {
   // Formatted on the server, so server and client render the same text.
   editedLabel: string;
   preview: ResumePreview;
+  // False once the account is at its resume limit.
+  canDuplicate: boolean;
+  // False until the resume has a name and an email.
+  canExport: boolean;
 };
 
-export function ResumeCard({ id, title, editedLabel, preview }: ResumeCardProps) {
+const DOWNLOADS = [
+  { format: "pdf", label: "PDF" },
+  { format: "docx", label: "DOCX" },
+] as const;
+
+export function ResumeCard({
+  id,
+  title,
+  editedLabel,
+  preview,
+  canDuplicate,
+  canExport,
+}: ResumeCardProps) {
   const [dialog, setDialog] = useState<"rename" | "delete" | null>(null);
+  const [duplicating, startDuplicate] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function duplicate() {
+    setError(null);
+    startDuplicate(async () => {
+      const result = await duplicateResume(id);
+      if (!result.ok) {
+        setError(result.message);
+      }
+    });
+  }
 
   return (
     <li className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-[border-color,box-shadow] duration-200 focus-within:border-primary hover:border-primary/60 hover:shadow-[0_18px_40px_-24px_rgb(0_0_0/0.5)]">
@@ -45,7 +78,15 @@ export function ResumeCard({ id, title, editedLabel, preview }: ResumeCardProps)
               {title}
             </Link>
           </h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">{editedLabel}</p>
+          {error ? (
+            <p role="alert" className="relative z-10 mt-0.5 text-sm text-destructive">
+              {error}
+            </p>
+          ) : (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {duplicating ? "Duplicating..." : editedLabel}
+            </p>
+          )}
         </div>
 
         <DropdownMenu>
@@ -61,11 +102,41 @@ export function ResumeCard({ id, title, editedLabel, preview }: ResumeCardProps)
           >
             <MoreHorizontal />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={() => setDialog("rename")}>
               <Pencil />
               Rename
             </DropdownMenuItem>
+            <DropdownMenuItem disabled={!canDuplicate || duplicating} onClick={duplicate}>
+              <Copy />
+              Duplicate
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {canExport ? (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Printer />
+                  Print
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-32">
+                  {DOWNLOADS.map(({ format, label }) => (
+                    <DropdownMenuItem
+                      key={format}
+                      render={<a href={`/editor/${id}/export/${format}`} download />}
+                    >
+                      {label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            ) : (
+              // The files need a name and an email on the resume.
+              <DropdownMenuItem disabled title="Add a name and email to the resume first.">
+                <Printer />
+                Print
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => setDialog("delete")}>
               <Trash2 />
               Delete

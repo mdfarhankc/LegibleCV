@@ -1,7 +1,11 @@
 import "server-only";
 
 import { requireUser } from "@/lib/auth/dal";
-import { buildResumePreview, type ResumePreview } from "@/lib/resumes/preview";
+import {
+  buildResumePreview,
+  canExportResume,
+  type ResumePreview,
+} from "@/lib/resumes/preview";
 import { resumeIdSchema } from "@/lib/resumes/schemas";
 import { createClient } from "@/lib/supabase/server";
 import type { Resume } from "@/types/resume";
@@ -14,6 +18,7 @@ export type ResumeSummary = {
 
 export type ResumeListItem = ResumeSummary & {
   preview: ResumePreview;
+  canExport: boolean;
 };
 
 export type StoredResume = ResumeSummary & {
@@ -38,6 +43,7 @@ export async function listResumes(): Promise<ResumeListItem[]> {
     title: row.title,
     updatedAt: row.updated_at,
     preview: buildResumePreview(row.data),
+    canExport: canExportResume(row.data),
   }));
 }
 

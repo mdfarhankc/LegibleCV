@@ -3,9 +3,13 @@ import { z } from "zod";
 // What the dashboard thumbnail draws. Built from stored JSON, which is not trusted to match
 // the Resume type, so everything is parsed loosely and bad values fall back to empty.
 
+const TEMPLATES = ["classic", "sidepanel", "banner"] as const;
+
 export type PreviewRow = {
   text: string;
   right?: string;
+  // Skill groups only. Printed before the text, or above it in a narrow column.
+  label?: string;
   style: "bold" | "italic" | "plain" | "bullet";
 };
 
@@ -14,11 +18,19 @@ export type PreviewSection = {
   rows: PreviewRow[];
 };
 
+export type PreviewTemplate = (typeof TEMPLATES)[number];
+
 export type ResumePreview = {
+  template: PreviewTemplate;
   name: string;
-  contact: string;
+  contact: string[];
   sections: PreviewSection[];
+  // Only filled on the two-column templates.
+  sideSections: PreviewSection[];
 };
+
+// Section types that go to the side column when their placement is automatic.
+const SIDE_BY_DEFAULT = ["skills", "bullets", "inline"];
 
 const MAX_SECTIONS = 5;
 const MAX_ROWS = 7;
@@ -39,6 +51,7 @@ const entrySchema = z.object({
 const sectionSchema = z.object({
   type: text,
   title: text,
+  placement: text,
   content: text,
   items: z.array(z.unknown()).catch([]),
   groups: z.array(z.object({ label: text, items: strings })).catch([]),
@@ -51,8 +64,20 @@ const resumeSchema = z
     phone: text,
     location: text,
     sections: z.array(sectionSchema.catch(sectionSchema.parse({}))).catch([]),
+    options: z
+      .object({ template: z.enum(TEMPLATES).catch("classic") })
+      .catch({ template: "classic" }),
   })
-  .catch({ full_name: "", email: "", phone: "", location: "", sections: [] });
+  .catch({
+    full_name: "",
+    email: "",
+    phone: "",
+    location: "",
+    sections: [],
+    options: { template: "classic" },
+  });
+
+type StoredSection = z.infer<typeof sectionSchema>;
 
 // Rich text uses **bold**; the thumbnail is too small for it to matter.
 const plain = (value: string) => value.replaceAll("**", "");
@@ -62,18 +87,26 @@ function dateRange(entry: z.infer<typeof entrySchema>): string {
   return entry.start && end ? `${entry.start} - ${end}` : entry.start || end;
 }
 
-function entryRows(item: unknown): PreviewRow[] {
+function entryRows(item: unknown, classic: boolean): PreviewRow[] {
   const parsed = entrySchema.safeParse(item);
   if (!parsed.success || !parsed.data.title) {
     return [];
   }
   const entry = parsed.data;
   const dates = dateRange(entry);
-  const rows: PreviewRow[] = [
-    { text: entry.title, right: entry.location || dates, style: "bold" },
-  ];
-  if (entry.subtitle) {
-    rows.push({ text: entry.subtitle, right: entry.location ? dates : "", style: "italic" });
+  const rows: PreviewRow[] = [];
+  if (classic) {
+    rows.push({ text: entry.title, right: entry.location || dates, style: "bold" });
+    if (entry.subtitle) {
+      rows.push({ text: entry.subtitle, right: entry.location ? dates : "", style: "italic" });
+    }
+  } else {
+    // The two-column templates put the dates beside the title and the location under it.
+    rows.push({ text: entry.title, right: dates, style: "bold" });
+    const subtitle = [entry.subtitle, entry.location].filter(Boolean).join(", ");
+    if (subtitle) {
+      rows.push({ text: subtitle, style: "italic" });
+    }
   }
   for (const bullet of entry.bullets) {
     rows.push({ text: plain(bullet), style: "bullet" });
@@ -81,41 +114,62 @@ function entryRows(item: unknown): PreviewRow[] {
   return rows;
 }
 
-function sectionRows(section: z.infer<typeof sectionSchema>): PreviewRow[] {
+function sectionRows(section: StoredSection, classic: boolean): PreviewRow[] {
+  const strings = section.items.filter((item): item is string => typeof item === "string");
+
   switch (section.type) {
     case "text":
       return section.content ? [{ text: plain(section.content), style: "plain" }] : [];
     case "entries":
-      return section.items.flatMap(entryRows);
+      return section.items.flatMap((item) => entryRows(item, classic));
     case "skills":
       return section.groups
         .filter((group) => group.items.length > 0)
-        .map((group) => ({ text: `${group.label}: ${group.items.join(", ")}`, style: "plain" }));
+        .map((group) => ({ label: group.label, text: group.items.join(", "), style: "plain" }));
     case "bullets":
-      return section.items
-        .filter((item): item is string => typeof item === "string")
-        .map((item) => ({ text: plain(item), style: "bullet" }));
-    case "inline": {
-      const joined = section.items.filter((item) => typeof item === "string").join("  |  ");
-      return joined ? [{ text: joined, style: "plain" }] : [];
-    }
+      return strings.map((item) => ({ text: plain(item), style: "bullet" }));
+    case "inline":
+      // One line on a full-width column, one item per line in the narrow one.
+      if (!classic && isSide(section)) {
+        return strings.map((item) => ({ text: item, style: "plain" }));
+      }
+      return strings.length > 0 ? [{ text: strings.join("  |  "), style: "plain" }] : [];
     default:
       return [];
   }
 }
 
+function isSide(section: StoredSection): boolean {
+  if (section.placement === "side") {
+    return true;
+  }
+  return section.placement !== "main" && SIDE_BY_DEFAULT.includes(section.type);
+}
+
+// The render service needs a name and an email, so a resume without them can't be downloaded yet.
+export function canExportResume(data: unknown): boolean {
+  const resume = resumeSchema.parse(data ?? {});
+  return Boolean(resume.full_name.trim() && resume.email.trim());
+}
+
 export function buildResumePreview(data: unknown): ResumePreview {
   const resume = resumeSchema.parse(data ?? {});
 
+  const template = resume.options.template;
+  const classic = template === "classic";
+  const titled = resume.sections.filter((section) => section.title);
+
+  const build = (sections: StoredSection[]): PreviewSection[] =>
+    sections.slice(0, MAX_SECTIONS).map((section) => ({
+      title: section.title,
+      rows: sectionRows(section, classic).slice(0, MAX_ROWS),
+    }));
+
   return {
+    template,
     name: resume.full_name,
-    contact: [resume.location, resume.email, resume.phone].filter(Boolean).join("  |  "),
-    sections: resume.sections
-      .filter((section) => section.title)
-      .slice(0, MAX_SECTIONS)
-      .map((section) => ({
-        title: section.title.toUpperCase(),
-        rows: sectionRows(section).slice(0, MAX_ROWS),
-      })),
+    contact: [resume.location, resume.email, resume.phone].filter(Boolean),
+    sections: build(classic ? titled : titled.filter((section) => !isSide(section))),
+    sideSections: classic ? [] : build(titled.filter(isSide)),
   };
 }
