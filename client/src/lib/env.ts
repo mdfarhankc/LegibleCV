@@ -12,4 +12,8 @@ export const env = {
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   ),
+  // A getter, so only code that renders resumes fails when it's missing.
+  get renderServiceUrl() {
+    return required("NEXT_PUBLIC_API_URL", process.env.NEXT_PUBLIC_API_URL).replace(/\/+$/, "");
+  },
 };

@@ -7,7 +7,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col">
       <SiteHeader user={user} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+      {/* Each page sets its own width and padding: the editor fills the screen, the rest don't. */}
+      <main className="flex w-full flex-1 flex-col">{children}</main>
     </div>
   );
 }

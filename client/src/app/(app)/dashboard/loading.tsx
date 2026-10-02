@@ -1,6 +1,6 @@
 export default function DashboardLoading() {
   return (
-    <div className="grid gap-8" aria-busy="true" aria-label="Loading your resumes">
+    <div className="mx-auto grid w-full max-w-6xl content-start gap-8 px-4 py-8" aria-busy="true" aria-label="Loading your resumes">
       <div className="space-y-2">
         <div className="h-9 w-56 animate-pulse rounded-md bg-muted" />
         <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />

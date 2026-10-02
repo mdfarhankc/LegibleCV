@@ -30,8 +30,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Render Preview */
-        post: operations["render_preview_v1_render_preview_post"];
+        /** Preview */
+        post: operations["preview_v1_render_preview_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -78,15 +78,21 @@ export interface components {
     schemas: {
         /** BulletsSection */
         BulletsSection: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Placement
+             * @default auto
+             * @enum {string}
+             */
+            placement: "auto" | "main" | "side";
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
             type: "bullets";
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
             /**
              * Items
              * @default []
@@ -95,15 +101,21 @@ export interface components {
         };
         /** EntriesSection */
         EntriesSection: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Placement
+             * @default auto
+             * @enum {string}
+             */
+            placement: "auto" | "main" | "side";
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
             type: "entries";
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
             /**
              * Items
              * @default []
@@ -148,15 +160,21 @@ export interface components {
         };
         /** InlineSection */
         InlineSection: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Placement
+             * @default auto
+             * @enum {string}
+             */
+            placement: "auto" | "main" | "side";
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
             type: "inline";
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
             /**
              * Items
              * @default []
@@ -203,9 +221,9 @@ export interface components {
             /**
              * Template
              * @default classic
-             * @constant
+             * @enum {string}
              */
-            template: "classic";
+            template: "classic" | "sidepanel" | "banner";
             /**
              * Ats Mode
              * @default false
@@ -230,15 +248,21 @@ export interface components {
         };
         /** SkillsSection */
         SkillsSection: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Placement
+             * @default auto
+             * @enum {string}
+             */
+            placement: "auto" | "main" | "side";
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
             type: "skills";
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
             /**
              * Groups
              * @default []
@@ -247,15 +271,21 @@ export interface components {
         };
         /** TextSection */
         TextSection: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Placement
+             * @default auto
+             * @enum {string}
+             */
+            placement: "auto" | "main" | "side";
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
             type: "text";
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
             /** Content */
             content?: string | null;
         };
@@ -303,7 +333,7 @@ export interface operations {
             };
         };
     };
-    render_preview_v1_render_preview_post: {
+    preview_v1_render_preview_post: {
         parameters: {
             query?: never;
             header?: never;

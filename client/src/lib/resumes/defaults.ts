@@ -14,10 +14,34 @@ export function newResumeData(user: AuthUser): Resume {
     location: location || null,
     links: [],
     sections: [
-      { type: "text", id: crypto.randomUUID(), title: "Professional Summary", content: null },
-      { type: "entries", id: crypto.randomUUID(), title: "Work Experience", items: [] },
-      { type: "entries", id: crypto.randomUUID(), title: "Education", items: [] },
-      { type: "skills", id: crypto.randomUUID(), title: "Skills", groups: [] },
+      {
+        type: "text",
+        id: crypto.randomUUID(),
+        title: "Professional Summary",
+        placement: "auto",
+        content: null,
+      },
+      {
+        type: "entries",
+        id: crypto.randomUUID(),
+        title: "Work Experience",
+        placement: "auto",
+        items: [],
+      },
+      {
+        type: "entries",
+        id: crypto.randomUUID(),
+        title: "Education",
+        placement: "auto",
+        items: [],
+      },
+      {
+        type: "skills",
+        id: crypto.randomUUID(),
+        title: "Skills",
+        placement: "auto",
+        groups: [],
+      },
     ],
     options: { template: "classic", ats_mode: false, page_size: "A4" },
   };
