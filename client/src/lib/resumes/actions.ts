@@ -8,6 +8,13 @@ import { DEFAULT_SIGNED_IN_PATH } from "@/lib/auth/routes";
 import type { FormState } from "@/lib/form-state";
 import { DEFAULT_RESUME_TITLE, newResumeData } from "@/lib/resumes/defaults";
 import { resumeFormSchema, toResume } from "@/lib/resumes/form";
+import {
+  isJpeg,
+  newPhotoPath,
+  PHOTO_BUCKET,
+  PHOTO_MAX_BYTES,
+  removeResumePhotos,
+} from "@/lib/resumes/photo";
 import { renderResume } from "@/lib/resumes/render";
 import { resumeIdSchema, resumeTitleSchema } from "@/lib/resumes/schemas";
 import { createClient } from "@/lib/supabase/server";
@@ -65,7 +72,7 @@ export async function renameResume(
 }
 
 export async function deleteResume(_state: FormState, formData: FormData): Promise<FormState> {
-  await requireUser();
+  const user = await requireUser();
 
   const id = resumeIdSchema.safeParse(formData.get("id"));
   if (!id.success) {
@@ -77,6 +84,7 @@ export async function deleteResume(_state: FormState, formData: FormData): Promi
   if (error) {
     return { message: "Could not delete the resume. Try again." };
   }
+  await removeResumePhotos(supabase, user.id, id.data);
 
   revalidatePath(DEFAULT_SIGNED_IN_PATH);
   return { success: "Deleted." };
@@ -89,7 +97,7 @@ const MAX_TITLE_LENGTH = 120;
 
 // Copies a resume as it is stored. The limit trigger applies to the copy like any new resume.
 export async function duplicateResume(id: string): Promise<DuplicateResult> {
-  await requireUser();
+  const user = await requireUser();
 
   const resumeId = resumeIdSchema.safeParse(id);
   if (!resumeId.success) {
@@ -99,7 +107,7 @@ export async function duplicateResume(id: string): Promise<DuplicateResult> {
   const supabase = await createClient();
   const { data: original, error: readError } = await supabase
     .from("resumes")
-    .select("title, data")
+    .select("title, data, photo_path")
     .eq("id", resumeId.data)
     .maybeSingle();
   if (readError || !original) {
@@ -108,7 +116,11 @@ export async function duplicateResume(id: string): Promise<DuplicateResult> {
 
   // Keeps the copy's title inside the column's length limit.
   const title = original.title.slice(0, MAX_TITLE_LENGTH - COPY_SUFFIX.length) + COPY_SUFFIX;
-  const { error } = await supabase.from("resumes").insert({ title, data: original.data });
+  const { data: copy, error } = await supabase
+    .from("resumes")
+    .insert({ title, data: original.data })
+    .select("id")
+    .single();
   if (error) {
     return {
       ok: false,
@@ -116,6 +128,16 @@ export async function duplicateResume(id: string): Promise<DuplicateResult> {
         ? "You've reached your resume limit. Delete one to duplicate this."
         : "Could not duplicate the resume. Try again.",
     };
+  }
+
+  // The copy gets its own file, so deleting either resume leaves the other's photo alone.
+  // If this fails the copy simply has no photo.
+  if (original.photo_path) {
+    const path = newPhotoPath(user.id, copy.id);
+    const copied = await supabase.storage.from(PHOTO_BUCKET).copy(original.photo_path, path);
+    if (!copied.error) {
+      await supabase.from("resumes").update({ photo_path: path }).eq("id", copy.id);
+    }
   }
 
   revalidatePath(DEFAULT_SIGNED_IN_PATH);
@@ -173,12 +195,16 @@ export async function renderPreview(values: unknown): Promise<PreviewResult> {
   }
 
   const resume = toResume(parsed.data);
-  const result = await renderResume("preview", {
-    ...resume,
-    // The contract needs both. Placeholders keep a new resume previewable.
-    full_name: resume.full_name || "Your Name",
-    email: resume.email || "you@example.com",
-  });
+  const result = await renderResume(
+    "preview",
+    {
+      ...resume,
+      // The contract needs both. Placeholders keep a new resume previewable.
+      full_name: resume.full_name || "Your Name",
+      email: resume.email || "you@example.com",
+    },
+    parsed.data.photo_path,
+  );
   if (!result.ok) {
     return { ok: false, message: result.message };
   }
@@ -191,4 +217,81 @@ export async function renderPreview(values: unknown): Promise<PreviewResult> {
     html: html.replace("<head>", `<head>${PREVIEW_FONT_LINK}`),
     pageCount: Number.isInteger(pageCount) && pageCount > 0 ? pageCount : null,
   };
+}
+
+export type PhotoResult = { ok: true; photoPath: string | null } | { ok: false; message: string };
+
+const PHOTO_FAILED = { ok: false as const, message: "Could not save the photo. Try again." };
+
+// The browser sends a small square JPEG. It's checked again here because the browser isn't trusted.
+export async function uploadResumePhoto(id: string, formData: FormData): Promise<PhotoResult> {
+  const user = await getUser();
+  if (!user) {
+    return { ok: false, message: "Your session ended. Log in again." };
+  }
+  const resumeId = resumeIdSchema.safeParse(id);
+  const file = formData.get("photo");
+  if (!resumeId.success || !(file instanceof File)) {
+    return PHOTO_FAILED;
+  }
+  if (file.size > PHOTO_MAX_BYTES) {
+    return { ok: false, message: "That photo is too large." };
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (!isJpeg(bytes)) {
+    return { ok: false, message: "That file isn't an image this app can use." };
+  }
+
+  const supabase = await createClient();
+  // RLS returns nothing for a resume that isn't the user's.
+  const { data: resume, error: readError } = await supabase
+    .from("resumes")
+    .select("photo_path")
+    .eq("id", resumeId.data)
+    .maybeSingle();
+  if (readError || !resume) {
+    return PHOTO_FAILED;
+  }
+
+  const path = newPhotoPath(user.id, resumeId.data);
+  const bucket = supabase.storage.from(PHOTO_BUCKET);
+  const upload = await bucket.upload(path, bytes, { contentType: "image/jpeg" });
+  if (upload.error) {
+    return PHOTO_FAILED;
+  }
+  const { error } = await supabase
+    .from("resumes")
+    .update({ photo_path: path })
+    .eq("id", resumeId.data);
+  if (error) {
+    await bucket.remove([path]);
+    return PHOTO_FAILED;
+  }
+  // The old file goes last, so a failure above never leaves the resume without its photo.
+  if (resume.photo_path) {
+    await bucket.remove([resume.photo_path]);
+  }
+  return { ok: true, photoPath: path };
+}
+
+export async function removeResumePhoto(id: string): Promise<PhotoResult> {
+  const user = await getUser();
+  if (!user) {
+    return { ok: false, message: "Your session ended. Log in again." };
+  }
+  const resumeId = resumeIdSchema.safeParse(id);
+  if (!resumeId.success) {
+    return { ok: false, message: "Could not remove the photo. Try again." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("resumes")
+    .update({ photo_path: null })
+    .eq("id", resumeId.data);
+  if (error) {
+    return { ok: false, message: "Could not remove the photo. Try again." };
+  }
+  await removeResumePhotos(supabase, user.id, resumeId.data);
+  return { ok: true, photoPath: null };
 }

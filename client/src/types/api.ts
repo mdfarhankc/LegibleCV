@@ -204,6 +204,8 @@ export interface components {
             phone?: string | null;
             /** Location */
             location?: string | null;
+            /** Photo */
+            photo?: string | null;
             /**
              * Links
              * @default []
@@ -224,6 +226,12 @@ export interface components {
              * @enum {string}
              */
             template: "classic" | "sidepanel" | "banner";
+            /**
+             * Color
+             * @default default
+             * @enum {string}
+             */
+            color: "default" | "navy" | "slate" | "teal" | "forest" | "maroon" | "plum";
             /**
              * Ats Mode
              * @default false

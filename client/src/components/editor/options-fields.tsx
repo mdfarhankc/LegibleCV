@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
@@ -12,6 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import {
+  COLOR_LABELS,
+  type ColorName,
+  NAMED_COLORS,
+  paletteFor,
+  resolveColor,
+} from "@/lib/resumes/colors";
 import type { ResumeFormValues, TemplateName } from "@/lib/resumes/form";
 
 const PAGE_SIZES = [
@@ -22,41 +28,53 @@ const PAGE_SIZES = [
 const line = "h-0.5 rounded-full bg-black/25";
 
 // Small diagrams of each layout. Drawn on white, like the page itself.
-const DIAGRAMS: Record<TemplateName, ReactNode> = {
-  classic: (
-    <div className="grid h-full content-start gap-1 p-2">
-      <div className="mx-auto h-1 w-1/2 rounded-full bg-black/60" />
-      <div className={`${line} mx-auto w-2/3`} />
-      <div className="mt-1 h-px bg-black/50" />
-      <div className={line} />
-      <div className={`${line} w-4/5`} />
-      <div className="mt-1 h-px bg-black/50" />
-      <div className={line} />
-      <div className={`${line} w-3/4`} />
-      <div className={line} />
-    </div>
-  ),
-  sidepanel: (
-    <div className="flex h-full">
-      <div className="grid w-1/3 content-start gap-1 bg-[#eef0f6]">
-        <div className="h-4 rounded-b-[50%] bg-[#0d1746]" />
-        <div className={`${line} mx-1`} />
-        <div className={`${line} mx-1 w-1/2`} />
-        <div className={`${line} mx-1`} />
-      </div>
-      <div className="grid flex-1 content-start gap-1 p-1.5">
-        <div className="h-px bg-black/40" />
+function Diagram({ template, color }: { template: TemplateName; color: ColorName }) {
+  if (template === "classic") {
+    return (
+      <div className="grid h-full content-start gap-1 p-2">
+        <div className="mx-auto h-1 w-1/2 rounded-full bg-black/60" />
+        <div className={`${line} mx-auto w-2/3`} />
+        <div className="mt-1 h-px bg-black/50" />
         <div className={line} />
         <div className={`${line} w-4/5`} />
-        <div className="mt-1 h-px bg-black/40" />
+        <div className="mt-1 h-px bg-black/50" />
         <div className={line} />
-        <div className={`${line} w-2/3`} />
+        <div className={`${line} w-3/4`} />
+        <div className={line} />
       </div>
-    </div>
-  ),
-  banner: (
+    );
+  }
+
+  const palette = paletteFor(template, color);
+  if (template === "sidepanel") {
+    return (
+      <div className="flex h-full">
+        <div
+          className="grid w-1/3 content-start gap-1"
+          style={{ backgroundColor: palette.tint }}
+        >
+          <div className="h-4 rounded-b-[50%]" style={{ backgroundColor: palette.strong }} />
+          <div className={`${line} mx-1`} />
+          <div className={`${line} mx-1 w-1/2`} />
+          <div className={`${line} mx-1`} />
+        </div>
+        <div className="grid flex-1 content-start gap-1 p-1.5">
+          <div className="h-px bg-black/40" />
+          <div className={line} />
+          <div className={`${line} w-4/5`} />
+          <div className="mt-1 h-px bg-black/40" />
+          <div className={line} />
+          <div className={`${line} w-2/3`} />
+        </div>
+      </div>
+    );
+  }
+  return (
     <div className="flex h-full flex-col">
-      <div className="grid h-5 content-center gap-0.5 bg-[#2e3443] px-1.5">
+      <div
+        className="grid h-5 content-center gap-0.5 px-1.5"
+        style={{ backgroundColor: palette.strong }}
+      >
         <div className="h-1 w-1/2 rounded-full bg-white/90" />
         <div className="h-0.5 w-2/3 rounded-full bg-white/50" />
       </div>
@@ -75,8 +93,8 @@ const DIAGRAMS: Record<TemplateName, ReactNode> = {
         </div>
       </div>
     </div>
-  ),
-};
+  );
+}
 
 const TEMPLATE_OPTIONS: { value: TemplateName; label: string; note: string }[] = [
   { value: "classic", label: "Classic", note: "One column. Works with ATS software." },
@@ -87,6 +105,7 @@ const TEMPLATE_OPTIONS: { value: TemplateName; label: string; note: string }[] =
 export function OptionsFields() {
   const { control } = useFormContext<ResumeFormValues>();
   const template = useWatch({ control, name: "template" });
+  const color = useWatch({ control, name: "color" });
   const twoColumn = template !== "classic";
 
   return (
@@ -112,7 +131,7 @@ export function OptionsFields() {
                   />
                   <div className="grid gap-2 rounded-lg border p-3 transition-colors peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:border-primary/60">
                     <div className="mx-auto h-24 w-[4.25rem] overflow-hidden rounded-[2px] bg-white ring-1 ring-black/15">
-                      {DIAGRAMS[option.value]}
+                      <Diagram template={option.value} color={color} />
                     </div>
                     <div>
                       <p className="font-medium">{option.label}</p>
@@ -133,6 +152,42 @@ export function OptionsFields() {
           </p>
         )}
       </fieldset>
+
+      {/* Classic stays black on white, so there's no color to choose there. */}
+      {twoColumn && (
+        <fieldset>
+          <legend className="mb-3 text-sm font-medium">Color</legend>
+          <Controller
+            control={control}
+            name="color"
+            render={({ field }) => (
+              <div className="flex flex-wrap gap-3">
+                {NAMED_COLORS.map((name) => (
+                  <label key={name} className="cursor-pointer" title={COLOR_LABELS[name]}>
+                    <input
+                      type="radio"
+                      name={field.name}
+                      value={name}
+                      // A resume that never had a color picked shows the template's own.
+                      checked={resolveColor(template, field.value) === name}
+                      onChange={() => field.onChange(name)}
+                      className="peer sr-only"
+                    />
+                    <span
+                      className="block size-8 rounded-full ring-1 ring-black/15 ring-offset-2 ring-offset-background transition-shadow peer-checked:ring-2 peer-checked:ring-primary peer-focus-visible:ring-3 peer-focus-visible:ring-ring"
+                      style={{ backgroundColor: paletteFor(template, name).strong }}
+                    />
+                    <span className="sr-only">{COLOR_LABELS[name]}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          />
+          <p className="mt-3 text-sm text-muted-foreground">
+            {COLOR_LABELS[resolveColor(template, color)]}
+          </p>
+        </fieldset>
+      )}
 
       <div className="flex items-start gap-3">
         <Controller

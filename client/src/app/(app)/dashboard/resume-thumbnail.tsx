@@ -1,3 +1,7 @@
+import Image from "next/image";
+import type { CSSProperties } from "react";
+
+import { paletteFor, type TwoColumnTemplate } from "@/lib/resumes/colors";
 import type { PreviewRow, PreviewSection, ResumePreview } from "@/lib/resumes/preview";
 
 // Sizes are in cqw (percent of the thumbnail's width), so the page keeps its proportions
@@ -23,7 +27,7 @@ const CLASSIC: Look = {
 const SIDE_PANEL: Look = {
   heading:
     "mt-[2.6cqw] mb-[1.2cqw] truncate border-b border-black/20 pb-[0.5cqw] text-[2.9cqw] leading-tight",
-  subtitle: "text-[#1c3faa]",
+  subtitle: "text-(--accent)",
   label: "text-black/55",
 };
 
@@ -98,7 +102,36 @@ function Sections({ sections, look, stacked = false }: SectionsProps) {
   ));
 }
 
-function ClassicPage({ preview }: { preview: ResumePreview }) {
+type PageProps = {
+  preview: ResumePreview;
+  photoUrl: string | null;
+};
+
+// The template's colors as CSS variables, so the classes below can use them.
+function colorVariables(template: TwoColumnTemplate, preview: ResumePreview): CSSProperties {
+  const palette = paletteFor(template, preview.color);
+  return {
+    "--strong": palette.strong,
+    "--accent": palette.accent,
+    "--tint": palette.tint,
+  } as CSSProperties;
+}
+
+function Photo({ url, className }: { url: string; className: string }) {
+  return (
+    <Image
+      // Served by a route that needs the session, so the image optimizer can't fetch it.
+      unoptimized
+      src={url}
+      alt=""
+      width={96}
+      height={96}
+      className={`object-cover ${className}`}
+    />
+  );
+}
+
+function ClassicPage({ preview }: PageProps) {
   return (
     <div
       className={`${paper} px-[7cqw] pt-[6.5cqw] font-(family-name:--font-resume) text-[2.35cqw] leading-[1.35]`}
@@ -122,11 +155,20 @@ function ClassicPage({ preview }: { preview: ResumePreview }) {
   );
 }
 
-function SidePanelPage({ preview }: { preview: ResumePreview }) {
+function SidePanelPage({ preview, photoUrl }: PageProps) {
   return (
-    <div className={`${paper} flex font-(family-name:--font-resume) text-[2.05cqw] leading-[1.35]`}>
-      <div className="w-[33%] shrink-0 bg-[#eef0f6] px-[3cqw] text-[1.9cqw]">
-        <div className="-mx-[3cqw] rounded-b-[50%_3.5cqw] bg-[#0d1746] px-[3cqw] pt-[6cqw] pb-[6.5cqw]">
+    <div
+      style={colorVariables("sidepanel", preview)}
+      className={`${paper} flex font-(family-name:--font-resume) text-[2.05cqw] leading-[1.35]`}
+    >
+      <div className="w-[33%] shrink-0 bg-(--tint) px-[3cqw] text-[1.9cqw]">
+        <div className="-mx-[3cqw] rounded-b-[50%_3.5cqw] bg-(--strong) px-[3cqw] pt-[6cqw] pb-[6.5cqw]">
+          {photoUrl && (
+            <Photo
+              url={photoUrl}
+              className="mx-auto mb-[2cqw] size-[14cqw] rounded-full ring-[0.4cqw] ring-white"
+            />
+          )}
           {preview.name ? (
             <p className="line-clamp-2 text-center text-[3.5cqw] leading-tight font-bold text-white">
               {preview.name}
@@ -155,22 +197,28 @@ function SidePanelPage({ preview }: { preview: ResumePreview }) {
   );
 }
 
-function BannerPage({ preview }: { preview: ResumePreview }) {
+function BannerPage({ preview, photoUrl }: PageProps) {
   return (
     <div
+      style={colorVariables("banner", preview)}
       className={`${paper} flex flex-col font-(family-name:--font-resume-banner) text-[1.9cqw] leading-[1.4]`}
     >
-      <div className="bg-[#2e3443] px-[6.5cqw] pt-[7cqw] pb-[6cqw] text-white">
-        {preview.name ? (
-          <p className="truncate text-[5.3cqw] leading-tight font-light uppercase">{preview.name}</p>
-        ) : (
-          <div className="h-[4cqw] w-1/2 rounded-full bg-white/30" />
-        )}
-        <p className="mt-[1.4cqw] flex gap-[2.5cqw] overflow-hidden text-[1.8cqw] whitespace-nowrap text-white/70">
-          {preview.contact.map((item, index) => (
-            <span key={index}>{item}</span>
-          ))}
-        </p>
+      <div className="flex items-center gap-[3.5cqw] bg-(--strong) px-[6.5cqw] pt-[7cqw] pb-[6cqw] text-white">
+        {photoUrl && <Photo url={photoUrl} className="size-[13cqw] shrink-0 rounded-[0.8cqw]" />}
+        <div className="min-w-0 flex-1">
+          {preview.name ? (
+            <p className="truncate text-[5.3cqw] leading-tight font-light uppercase">
+              {preview.name}
+            </p>
+          ) : (
+            <div className="h-[4cqw] w-1/2 rounded-full bg-white/30" />
+          )}
+          <p className="mt-[1.4cqw] flex gap-[2.5cqw] overflow-hidden text-[1.8cqw] whitespace-nowrap text-white/70">
+            {preview.contact.map((item, index) => (
+              <span key={index}>{item}</span>
+            ))}
+          </p>
+        </div>
       </div>
       <div className="flex flex-1">
         <div className="min-w-0 flex-1 border-r border-black/15 pr-[4cqw] pl-[6.5cqw]">
@@ -195,12 +243,12 @@ const PAGES = {
   banner: BannerPage,
 };
 
-export function ResumeThumbnail({ preview }: { preview: ResumePreview }) {
+export function ResumeThumbnail({ preview, photoUrl }: PageProps) {
   const Page = PAGES[preview.template];
 
   return (
     <div className="@container" aria-hidden="true">
-      <Page preview={preview} />
+      <Page preview={preview} photoUrl={photoUrl} />
     </div>
   );
 }

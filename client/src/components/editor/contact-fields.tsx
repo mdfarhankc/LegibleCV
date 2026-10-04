@@ -4,16 +4,18 @@ import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
 import { TextField } from "@/components/editor/fields";
+import { PhotoField } from "@/components/editor/photo-field";
 import { Button } from "@/components/ui/button";
 import { LIMITS, type ResumeFormValues } from "@/lib/resumes/form";
 
-export function ContactFields() {
+export function ContactFields({ resumeId }: { resumeId: string }) {
   const { control } = useFormContext<ResumeFormValues>();
   const links = useFieldArray({ control, name: "links" });
 
   return (
     <section className="grid grid-cols-1 gap-5 rounded-xl border p-5 sm:p-6">
       <h2 className="font-heading text-lg font-semibold">Contact</h2>
+      <PhotoField resumeId={resumeId} />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField name="full_name" label="Full name" autoComplete="name" />
         <TextField name="email" label="Email" type="email" autoComplete="email" />

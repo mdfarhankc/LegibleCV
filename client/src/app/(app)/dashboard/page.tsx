@@ -52,6 +52,7 @@ export default async function DashboardPage() {
               preview={resume.preview}
               canDuplicate={!atLimit}
               canExport={resume.canExport}
+              photoUrl={resume.photoUrl}
             />
           ))}
         </ul>

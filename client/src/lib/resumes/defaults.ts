@@ -43,6 +43,6 @@ export function newResumeData(user: AuthUser): Resume {
         groups: [],
       },
     ],
-    options: { template: "classic", ats_mode: false, page_size: "A4" },
+    options: { template: "classic", color: "default", ats_mode: false, page_size: "A4" },
   };
 }

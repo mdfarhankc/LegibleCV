@@ -128,7 +128,7 @@ function StepNav({ control, steps, current, onSelect, onAdd, canAdd }: StepNavPr
   );
 }
 
-export function EditorSteps() {
+export function EditorSteps({ resumeId }: { resumeId: string }) {
   const { control, getValues } = useFormContext<ResumeFormValues>();
   const sections = useFieldArray({ control, name: "sections" });
   const [selected, setSelected] = useState<Step>({ kind: "basics" });
@@ -193,7 +193,7 @@ export function EditorSteps() {
               label="Resume name"
               hint="Only you see this. It isn't printed on the resume."
             />
-            <ContactFields />
+            <ContactFields resumeId={resumeId} />
           </div>
         )}
         {current.kind === "section" && (

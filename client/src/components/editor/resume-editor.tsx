@@ -112,7 +112,7 @@ export function ResumeEditor({ resumeId, initialValues }: ResumeEditorProps) {
 
         <div className="mx-auto grid min-h-0 w-full max-w-[100rem] flex-1 xl:grid-cols-[minmax(0,46rem)_minmax(0,1fr)]">
           <div className={`min-h-0 min-w-0 px-4 py-4 ${view === "edit" ? "block" : "hidden xl:block"}`}>
-            <EditorSteps />
+            <EditorSteps resumeId={resumeId} />
           </div>
 
           <div className={`min-h-0 min-w-0 px-4 py-4 ${view === "preview" ? "block" : "hidden xl:block"}`}>

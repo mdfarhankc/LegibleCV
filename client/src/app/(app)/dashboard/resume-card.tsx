@@ -32,6 +32,7 @@ type ResumeCardProps = {
   canDuplicate: boolean;
   // False until the resume has a name and an email.
   canExport: boolean;
+  photoUrl: string | null;
 };
 
 const DOWNLOADS = [
@@ -46,6 +47,7 @@ export function ResumeCard({
   preview,
   canDuplicate,
   canExport,
+  photoUrl,
 }: ResumeCardProps) {
   const [dialog, setDialog] = useState<"rename" | "delete" | null>(null);
   const [duplicating, startDuplicate] = useTransition();
@@ -66,7 +68,7 @@ export function ResumeCard({
       {/* The page lies on a desk and runs off the bottom edge. */}
       <div className="h-60 overflow-hidden bg-muted/60 px-7 pt-7">
         <div className="rounded-t-[3px] shadow-[0_1px_2px_rgb(0_0_0/0.1),0_10px_24px_-10px_rgb(0_0_0/0.35)] ring-1 ring-black/10 transition-transform duration-300 ease-out motion-safe:group-hover:-translate-y-2">
-          <ResumeThumbnail preview={preview} />
+          <ResumeThumbnail preview={preview} photoUrl={photoUrl} />
         </div>
       </div>
 

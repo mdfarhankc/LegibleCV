@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { type ColorName, COLORS } from "@/lib/resumes/colors";
+
 // What the dashboard thumbnail draws. Built from stored JSON, which is not trusted to match
 // the Resume type, so everything is parsed loosely and bad values fall back to empty.
 
@@ -22,6 +24,7 @@ export type PreviewTemplate = (typeof TEMPLATES)[number];
 
 export type ResumePreview = {
   template: PreviewTemplate;
+  color: ColorName;
   name: string;
   contact: string[];
   sections: PreviewSection[];
@@ -65,8 +68,11 @@ const resumeSchema = z
     location: text,
     sections: z.array(sectionSchema.catch(sectionSchema.parse({}))).catch([]),
     options: z
-      .object({ template: z.enum(TEMPLATES).catch("classic") })
-      .catch({ template: "classic" }),
+      .object({
+        template: z.enum(TEMPLATES).catch("classic"),
+        color: z.enum(COLORS).catch("default"),
+      })
+      .catch({ template: "classic", color: "default" }),
   })
   .catch({
     full_name: "",
@@ -74,7 +80,7 @@ const resumeSchema = z
     phone: "",
     location: "",
     sections: [],
-    options: { template: "classic" },
+    options: { template: "classic", color: "default" },
   });
 
 type StoredSection = z.infer<typeof sectionSchema>;
@@ -167,6 +173,7 @@ export function buildResumePreview(data: unknown): ResumePreview {
 
   return {
     template,
+    color: resume.options.color,
     name: resume.full_name,
     contact: [resume.location, resume.email, resume.phone].filter(Boolean),
     sections: build(classic ? titled : titled.filter((section) => !isSide(section))),

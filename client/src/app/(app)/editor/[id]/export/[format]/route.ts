@@ -31,7 +31,7 @@ export async function GET(
     return new Response("Add your name and email before downloading.", { status: 400 });
   }
 
-  const result = await renderResume(format, data);
+  const result = await renderResume(format, data, resume.photoPath);
   if (!result.ok) {
     return new Response(result.message, { status: result.status });
   }

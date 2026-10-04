@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { COLORS } from "@/lib/resumes/colors";
 import type { Entry, Resume, Section, SectionType } from "@/types/resume";
 
 // The editor works on a shape made for inputs: blank text is "" instead of null, and lists
@@ -146,8 +147,12 @@ export const resumeFormSchema = z.object({
   links: z.array(linkSchema).max(LIMITS.links),
   sections: z.array(sectionSchema).max(LIMITS.sections),
   template: z.enum(TEMPLATES),
+  color: z.enum(COLORS),
   ats_mode: z.boolean(),
   page_size: z.enum(PAGE_SIZES),
+  // Where the photo is stored. Kept in its own column, not in the resume data, and changed
+  // by the photo actions. It's in the form so the preview refreshes when it changes.
+  photo_path: z.string().max(200).nullable(),
 });
 
 export type ResumeFormValues = z.infer<typeof resumeFormSchema>;
@@ -250,10 +255,11 @@ const storedResume = z.object({
   options: z
     .object({
       template: z.enum(TEMPLATES).catch("classic"),
+      color: z.enum(COLORS).catch("default"),
       ats_mode: z.boolean().catch(false),
       page_size: z.enum(PAGE_SIZES).catch("A4"),
     })
-    .catch({ template: "classic", ats_mode: false, page_size: "A4" }),
+    .catch({ template: "classic", color: "default", ats_mode: false, page_size: "A4" }),
 });
 
 function sectionToForm(raw: unknown): SectionValues | null {
@@ -304,7 +310,11 @@ function sectionToForm(raw: unknown): SectionValues | null {
   }
 }
 
-export function toFormValues(title: string, data: unknown): ResumeFormValues {
+export function toFormValues(
+  title: string,
+  data: unknown,
+  photoPath: string | null = null,
+): ResumeFormValues {
   const resume = storedResume.catch(storedResume.parse({})).parse(data ?? {});
 
   return {
@@ -316,8 +326,10 @@ export function toFormValues(title: string, data: unknown): ResumeFormValues {
     links: resume.links,
     sections: resume.sections.flatMap((section) => sectionToForm(section) ?? []),
     template: resume.options.template,
+    color: resume.options.color,
     ats_mode: resume.options.ats_mode,
     page_size: resume.options.page_size,
+    photo_path: photoPath,
   };
 }
 
@@ -383,6 +395,7 @@ export function toResume(values: ResumeFormValues): Resume {
     sections: values.sections.map(toSection),
     options: {
       template: values.template,
+      color: values.color,
       ats_mode: values.ats_mode,
       page_size: values.page_size,
     },

@@ -19,7 +19,7 @@ export default async function EditorPage({ params }: PageProps<"/editor/[id]">) 
     <ResumeEditor
       key={resume.id}
       resumeId={resume.id}
-      initialValues={toFormValues(resume.title, resume.data)}
+      initialValues={toFormValues(resume.title, resume.data, resume.photoPath)}
     />
   );
 }

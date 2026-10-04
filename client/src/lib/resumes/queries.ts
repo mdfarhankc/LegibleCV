@@ -18,11 +18,14 @@ export type ResumeSummary = {
 
 export type ResumeListItem = ResumeSummary & {
   preview: ResumePreview;
+  // Null when there's no photo, or the template doesn't print one.
+  photoUrl: string | null;
   canExport: boolean;
 };
 
 export type StoredResume = ResumeSummary & {
   data: Resume;
+  photoPath: string | null;
 };
 
 // RLS limits every query here to the signed-in user's rows.
@@ -32,19 +35,24 @@ export async function listResumes(): Promise<ResumeListItem[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("resumes")
-    .select("id, title, updated_at, data")
+    .select("id, title, updated_at, data, photo_path")
     .order("updated_at", { ascending: false });
   if (error) {
     throw new Error("Could not load resumes", { cause: error });
   }
   // Only the small preview leaves the server, not the whole resume.
-  return data.map((row) => ({
-    id: row.id,
-    title: row.title,
-    updatedAt: row.updated_at,
-    preview: buildResumePreview(row.data),
-    canExport: canExportResume(row.data),
-  }));
+  return data.map((row) => {
+    const preview = buildResumePreview(row.data);
+    return {
+      id: row.id,
+      title: row.title,
+      updatedAt: row.updated_at,
+      preview,
+      photoUrl:
+        row.photo_path && preview.template !== "classic" ? `/editor/${row.id}/photo` : null,
+      canExport: canExportResume(row.data),
+    };
+  });
 }
 
 // Null when the id is malformed, the resume doesn't exist, or it belongs to someone else.
@@ -57,7 +65,7 @@ export async function getResume(id: string): Promise<StoredResume | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("resumes")
-    .select("id, title, updated_at, data")
+    .select("id, title, updated_at, data, photo_path")
     .eq("id", id)
     .maybeSingle();
   if (error) {
@@ -72,6 +80,7 @@ export async function getResume(id: string): Promise<StoredResume | null> {
     updatedAt: data.updated_at,
     // jsonb comes back untyped. The editor validates the shape before using it.
     data: data.data as unknown as Resume,
+    photoPath: data.photo_path,
   };
 }
 

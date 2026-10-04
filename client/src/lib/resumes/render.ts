@@ -1,6 +1,8 @@
 import "server-only";
 
+import { getUser } from "@/lib/auth/dal";
 import { env } from "@/lib/env";
+import { loadPhoto, toDataUri } from "@/lib/resumes/photo";
 import { toRenderPayload } from "@/lib/resumes/render-payload";
 import { createClient } from "@/lib/supabase/server";
 import type { Resume } from "@/types/resume";
@@ -24,21 +26,30 @@ function failureMessage(status: number): string {
 export async function renderResume(
   format: RenderFormat,
   resume: Resume,
+  photoPath: string | null = null,
 ): Promise<RenderSuccess | RenderFailure> {
+  const user = await getUser();
   const supabase = await createClient();
   // getSession() is only used to forward the token; the render service verifies it itself.
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
-  if (!token) {
+  if (!user || !token) {
     return { ok: false, status: 401, message: failureMessage(401) };
   }
+
+  // Only the two-column templates print a photo, and the Word file never does.
+  const printsPhoto = format !== "docx" && resume.options?.template !== "classic";
+  const photo = photoPath && printsPhoto ? await loadPhoto(supabase, user.id, photoPath) : null;
 
   let response: Response;
   try {
     response = await fetch(`${env.renderServiceUrl}/v1/render/${format}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(toRenderPayload(resume)),
+      body: JSON.stringify({
+        ...toRenderPayload(resume),
+        photo: photo ? toDataUri(photo) : null,
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(20_000),
     });
