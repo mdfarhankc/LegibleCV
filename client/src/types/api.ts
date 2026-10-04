@@ -99,6 +99,39 @@ export interface components {
              */
             items: string[];
         };
+        /** Detail */
+        Detail: {
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
+        };
+        /**
+         * DetailsSection
+         * @description Label and value pairs: nationality, visa status, date of birth.
+         */
+        DetailsSection: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Placement
+             * @default auto
+             * @enum {string}
+             */
+            placement: "auto" | "main" | "side";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "details";
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["Detail"][];
+        };
         /** EntriesSection */
         EntriesSection: {
             /** Id */
@@ -215,7 +248,7 @@ export interface components {
              * Sections
              * @default []
              */
-            sections: (components["schemas"]["TextSection"] | components["schemas"]["EntriesSection"] | components["schemas"]["SkillsSection"] | components["schemas"]["BulletsSection"] | components["schemas"]["InlineSection"])[];
+            sections: (components["schemas"]["TextSection"] | components["schemas"]["EntriesSection"] | components["schemas"]["SkillsSection"] | components["schemas"]["DetailsSection"] | components["schemas"]["BulletsSection"] | components["schemas"]["InlineSection"])[];
             options?: components["schemas"]["ResumeOptions"];
         };
         /** ResumeOptions */
@@ -370,6 +403,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Request body too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -378,6 +418,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -410,6 +457,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Request body too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -418,6 +472,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -450,6 +511,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Request body too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -458,6 +526,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

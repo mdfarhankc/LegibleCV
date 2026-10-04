@@ -17,6 +17,10 @@ function cleanSection(section: Section): Section | null {
       const groups = section.groups.filter((group) => group.label.trim() && group.items.length > 0);
       return groups.length > 0 ? { ...section, groups } : null;
     }
+    case "details": {
+      const items = section.items.filter((item) => item.label && item.value);
+      return items.length > 0 ? { ...section, items } : null;
+    }
     case "bullets":
     case "inline":
       return section.items.length > 0 ? section : null;

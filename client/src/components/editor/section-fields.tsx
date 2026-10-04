@@ -2,6 +2,7 @@
 
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
+import { DetailsFields } from "@/components/editor/details-fields";
 import { EntriesFields } from "@/components/editor/entries-fields";
 import { AreaField, TextField } from "@/components/editor/fields";
 import { ItemControls } from "@/components/editor/item-controls";
@@ -20,12 +21,13 @@ const TYPE_LABELS: Record<SectionValues["type"], string> = {
   text: "Text",
   entries: "Entries",
   skills: "Skill groups",
+  details: "Details",
   bullets: "Bullet list",
   inline: "One-line list",
 };
 
 // What "Automatic" does for each type on the two-column templates.
-const SIDE_BY_DEFAULT: SectionValues["type"][] = ["skills", "bullets", "inline"];
+const SIDE_BY_DEFAULT: SectionValues["type"][] = ["skills", "details", "bullets", "inline"];
 
 function placementOptions(type: SectionValues["type"]) {
   const automatic = SIDE_BY_DEFAULT.includes(type) ? "side" : "main";
@@ -44,6 +46,8 @@ function SectionBody({ index, type }: { index: number; type: SectionValues["type
       return <EntriesFields sectionIndex={index} />;
     case "skills":
       return <SkillsFields sectionIndex={index} />;
+    case "details":
+      return <DetailsFields sectionIndex={index} />;
     case "bullets":
       return (
         <AreaField

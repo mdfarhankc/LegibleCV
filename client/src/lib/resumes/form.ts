@@ -12,11 +12,12 @@ export const LIMITS = {
   sections: 20,
   entries: 30,
   groups: 20,
+  details: 20,
   listItems: 30,
   skillItems: 50,
 } as const;
 
-const SECTION_TYPES = ["text", "entries", "skills", "bullets", "inline"] as const;
+const SECTION_TYPES = ["text", "entries", "skills", "details", "bullets", "inline"] as const;
 const PAGE_SIZES = ["A4", "Letter"] as const;
 export const TEMPLATES = ["classic", "sidepanel", "banner"] as const;
 const PLACEMENTS = ["auto", "main", "side"] as const;
@@ -125,6 +126,8 @@ const skillGroupSchema = z.object({
   }),
 });
 
+const detailSchema = z.object({ label: text(80), value: text(200) });
+
 // One flat shape for every section type. Fields a type doesn't use stay empty.
 const sectionSchema = z.object({
   sectionId: z.string().min(1).max(64),
@@ -135,6 +138,7 @@ const sectionSchema = z.object({
   content: text(3000),
   items: z.array(entrySchema).max(LIMITS.entries),
   groups: z.array(skillGroupSchema).max(LIMITS.groups),
+  details: z.array(detailSchema).max(LIMITS.details),
   listText: lineList(LIMITS.listItems, 3000),
 });
 
@@ -189,6 +193,7 @@ export function emptySection(type: SectionType, title: string): SectionValues {
     content: "",
     items: [],
     groups: [],
+    details: [],
     listText: "",
   };
 }
@@ -199,8 +204,7 @@ export const SECTION_PRESETS: { label: string; type: SectionType; title: string 
   { label: "Projects", type: "entries", title: "Projects" },
   { label: "Education", type: "entries", title: "Education" },
   { label: "Skills", type: "skills", title: "Skills" },
-  // Label and value pairs: date of birth, nationality, and so on.
-  { label: "Personal details", type: "skills", title: "Personal details" },
+  { label: "Personal details", type: "details", title: "Personal Details" },
   { label: "Awards", type: "entries", title: "Awards & Achievements" },
   { label: "Languages", type: "inline", title: "Languages" },
   { label: "Custom text", type: "text", title: "" },
@@ -234,6 +238,8 @@ const storedEntry = z.object({
   description: stored.text,
   bullets: stored.strings,
 });
+
+const storedDetail = z.object({ label: stored.text, value: stored.text });
 
 const storedSection = z.object({
   id: stored.text,
@@ -300,6 +306,14 @@ function sectionToForm(raw: unknown): SectionValues | null {
       return {
         ...base,
         groups: section.groups.map((group) => ({ label: group.label, items: group.items.join(", ") })),
+      };
+    case "details":
+      return {
+        ...base,
+        details: section.items.flatMap((item) => {
+          const detail = storedDetail.safeParse(item);
+          return detail.success ? [detail.data] : [];
+        }),
       };
     case "bullets":
     case "inline":
@@ -374,6 +388,15 @@ function toSection(values: SectionValues): Section {
         groups: values.groups.map((group) => ({
           label: group.label.trim(),
           items: splitCommas(group.items),
+        })),
+      };
+    case "details":
+      return {
+        ...base,
+        type: "details",
+        items: values.details.map((detail) => ({
+          label: detail.label.trim(),
+          value: detail.value.trim(),
         })),
       };
     case "bullets":

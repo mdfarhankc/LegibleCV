@@ -12,6 +12,7 @@ The default template is built to get through applicant tracking systems: one col
 - Live preview next to the form, with the page count and a marker where each new page starts.
 - Three templates: Classic, Side panel, Banner.
 - On the Side panel and Banner templates: an optional photo you position yourself, a choice of six colors, and icons beside the contact details.
+- A personal details section (nationality, visa status, and so on) for applications abroad.
 - ATS mode on Classic: plain black text and link addresses printed out.
 - PDF export for every template. Word export for Classic, the one layout that stays editable in Word.
 - Two resumes per account by default. The limit is stored per user and enforced in the database.

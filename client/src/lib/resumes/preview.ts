@@ -33,7 +33,7 @@ export type ResumePreview = {
 };
 
 // Section types that go to the side column when their placement is automatic.
-const SIDE_BY_DEFAULT = ["skills", "bullets", "inline"];
+const SIDE_BY_DEFAULT = ["skills", "details", "bullets", "inline"];
 
 const MAX_SECTIONS = 5;
 const MAX_ROWS = 7;
@@ -50,6 +50,8 @@ const entrySchema = z.object({
   is_current: z.boolean().catch(false),
   bullets: strings,
 });
+
+const detailSchema = z.object({ label: text, value: text });
 
 const sectionSchema = z.object({
   type: text,
@@ -132,6 +134,13 @@ function sectionRows(section: StoredSection, classic: boolean): PreviewRow[] {
       return section.groups
         .filter((group) => group.items.length > 0)
         .map((group) => ({ label: group.label, text: group.items.join(", "), style: "plain" }));
+    case "details":
+      return section.items.flatMap((item): PreviewRow[] => {
+        const detail = detailSchema.safeParse(item);
+        return detail.success && detail.data.label && detail.data.value
+          ? [{ label: detail.data.label, text: detail.data.value, style: "plain" }]
+          : [];
+      });
     case "bullets":
       return strings.map((item) => ({ text: plain(item), style: "bullet" }));
     case "inline":
