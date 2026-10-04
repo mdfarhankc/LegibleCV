@@ -1,11 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { callbackUrl } from "@/lib/auth/origin";
 import { safeRedirectPath } from "@/lib/auth/redirect";
-import { DEFAULT_SIGNED_IN_PATH, LOGIN_PATH } from "@/lib/auth/routes";
+import { DEFAULT_SIGNED_IN_PATH, LOGIN_PATH, UPDATE_PASSWORD_PATH } from "@/lib/auth/routes";
 import {
   emailSchema,
   loginSchema,
@@ -44,14 +44,27 @@ export async function login(_state: CredentialsState, formData: FormData): Promi
   redirect(safeRedirectPath(formData.get("next")));
 }
 
-export async function signup(_state: CredentialsState, formData: FormData): Promise<CredentialsState> {
-  const parsed = signupSchema.safeParse(readCredentials(formData));
+type SignupState = FormState<"full_name" | "email" | "password">;
+
+export async function signup(_state: SignupState, formData: FormData): Promise<SignupState> {
+  const parsed = signupSchema.safeParse({
+    ...readCredentials(formData),
+    full_name: String(formData.get("full_name") ?? ""),
+  });
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   }
 
+  const { full_name, ...credentials } = parsed.data;
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp(parsed.data);
+  const { data, error } = await supabase.auth.signUp({
+    ...credentials,
+    options: {
+      // The profile lives in user metadata. New resumes start with this name filled in.
+      data: { full_name },
+      emailRedirectTo: await callbackUrl(DEFAULT_SIGNED_IN_PATH),
+    },
+  });
   if (error) {
     const message =
       error.code === "over_email_send_rate_limit"
@@ -85,23 +98,14 @@ export async function requestPasswordReset(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email);
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: await callbackUrl(UPDATE_PASSWORD_PATH),
+  });
   if (error?.code === "over_email_send_rate_limit") {
     return { message: "Too many requests. Try again in a few minutes." };
   }
   // Same answer whether or not the account exists.
   return { success: "sent" };
-}
-
-async function requestOrigin(): Promise<string> {
-  const headerList = await headers();
-  const origin = headerList.get("origin");
-  if (origin) {
-    return origin;
-  }
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const protocol = headerList.get("x-forwarded-proto") ?? "https";
-  return `${protocol}://${host}`;
 }
 
 export async function signInWithProvider(formData: FormData): Promise<void> {
@@ -110,13 +114,10 @@ export async function signInWithProvider(formData: FormData): Promise<void> {
     redirect(`${LOGIN_PATH}?error=oauth_failed`);
   }
 
-  const callback = new URL("/auth/callback", await requestOrigin());
-  callback.searchParams.set("next", safeRedirectPath(formData.get("next")));
-
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: provider.data,
-    options: { redirectTo: callback.toString() },
+    options: { redirectTo: await callbackUrl(safeRedirectPath(formData.get("next"))) },
   });
   if (error || !data.url) {
     redirect(`${LOGIN_PATH}?error=oauth_failed`);

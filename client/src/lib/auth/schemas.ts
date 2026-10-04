@@ -12,7 +12,12 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Enter your password."),
 });
 
-export const signupSchema = z.object({ email, password: newPassword });
+export const signupSchema = z.object({
+  // Same limit as the profile in Settings, which this fills in.
+  full_name: z.string().trim().min(1, "Enter your name.").max(200, "Use at most 200 characters."),
+  email,
+  password: newPassword,
+});
 
 export const emailSchema = z.object({ email });
 

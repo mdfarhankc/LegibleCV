@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireFreshUser } from "@/lib/auth/dal";
+import { callbackUrl } from "@/lib/auth/origin";
 import { profileSchema } from "@/lib/auth/profile";
-import { DEFAULT_SIGNED_IN_PATH } from "@/lib/auth/routes";
+import { DEFAULT_SIGNED_IN_PATH, SETTINGS_PATH } from "@/lib/auth/routes";
 import { emailSchema, newPasswordSchema } from "@/lib/auth/schemas";
 import type { FormState } from "@/lib/form-state";
+import { removeAllPhotos } from "@/lib/resumes/photo";
 import { createClient } from "@/lib/supabase/server";
 
 type PasswordState = FormState<"password" | "confirm">;
@@ -77,7 +79,10 @@ export async function updateEmail(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.updateUser({ email: parsed.data.email });
+  const { error } = await supabase.auth.updateUser(
+    { email: parsed.data.email },
+    { emailRedirectTo: await callbackUrl(SETTINGS_PATH) },
+  );
   if (error) {
     const message =
       error.code === "over_email_send_rate_limit"
@@ -100,7 +105,11 @@ export async function deleteAccount(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("delete_own_account");
+  // The account can't be deleted while it still owns stored files.
+  const photosRemoved = await removeAllPhotos(supabase, user.id);
+  const { error } = photosRemoved
+    ? await supabase.rpc("delete_own_account")
+    : { error: new Error("Photos could not be removed") };
   if (error) {
     return { message: "Could not delete your account. Try again." };
   }

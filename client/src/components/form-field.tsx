@@ -13,7 +13,7 @@ type FieldShellProps = {
 };
 
 // Label, control, then the error (or the hint when there's no error).
-function FieldShell({ name, label, hint, errors, children }: FieldShellProps) {
+export function FieldShell({ name, label, hint, errors, children }: FieldShellProps) {
   const hasErrors = Boolean(errors?.length);
   const noteId = hasErrors || hint ? `${name}-note` : undefined;
 

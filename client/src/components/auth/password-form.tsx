@@ -2,8 +2,8 @@
 
 import { useActionState } from "react";
 
-import { FormField } from "@/components/form-field";
 import { FormMessage } from "@/components/form-message";
+import { PasswordField } from "@/components/password-field";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/form-state";
 
@@ -19,19 +19,17 @@ export function PasswordForm({ action, submitLabel }: PasswordFormProps) {
 
   return (
     <form action={formAction} className="grid gap-4">
-      <FormField
+      <PasswordField
         name="password"
         label="New password"
-        type="password"
         autoComplete="new-password"
         required
         minLength={8}
         errors={state?.fieldErrors?.password}
       />
-      <FormField
+      <PasswordField
         name="confirm"
         label="Repeat new password"
-        type="password"
         autoComplete="new-password"
         required
         errors={state?.fieldErrors?.confirm}

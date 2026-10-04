@@ -6,6 +6,7 @@ import { useActionState, useState } from "react";
 import { AuthCard } from "@/components/auth/auth-card";
 import { FormField } from "@/components/form-field";
 import { FormMessage } from "@/components/form-message";
+import { PasswordField } from "@/components/password-field";
 import { Button } from "@/components/ui/button";
 import { login } from "@/lib/auth/actions";
 import { FORGOT_PASSWORD_PATH, SIGNUP_PATH } from "@/lib/auth/routes";
@@ -48,10 +49,9 @@ export function LoginForm({ next, notice }: LoginFormProps) {
           onChange={(event) => setEmail(event.target.value)}
           errors={state?.fieldErrors?.email}
         />
-        <FormField
+        <PasswordField
           name="password"
           label="Password"
-          type="password"
           autoComplete="current-password"
           required
           errors={state?.fieldErrors?.password}
