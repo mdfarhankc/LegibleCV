@@ -49,7 +49,8 @@ export async function renderResume(
     return { ok: false, status: 401, message: failureMessage(401), unavailable: false };
   }
 
-  // Only the two-column templates print a photo, and the Word file never does.
+  // Only the two-column templates print a photo. The Word check covers a direct call:
+  // those templates don't offer a Word file.
   const printsPhoto = format !== "docx" && resume.options?.template !== "classic";
   const photo = photoPath && printsPhoto ? await loadPhoto(supabase, user.id, photoPath) : null;
 

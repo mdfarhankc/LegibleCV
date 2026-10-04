@@ -147,8 +147,8 @@ export function OptionsFields() {
           <p className="text-sm text-muted-foreground">
             Job portals often read resumes with software that expects a single column. A two-column
             layout can come out with its text in the wrong order. Use this template when a person
-            will read the file, and Classic when applying through a portal. The Word download
-            stays single-column.
+            will read the file, and Classic when applying through a portal. It downloads as PDF
+            only; Word files are available with Classic.
           </p>
         )}
       </fieldset>

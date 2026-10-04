@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { duplicateResume } from "@/lib/resumes/actions";
+import { canDownload } from "@/lib/resumes/formats";
 import type { ResumePreview } from "@/lib/resumes/preview";
 
 import { DeleteDialog } from "./delete-dialog";
@@ -50,6 +51,7 @@ export function ResumeCard({
   photoUrl,
 }: ResumeCardProps) {
   const [dialog, setDialog] = useState<"rename" | "delete" | null>(null);
+  const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, preview.template));
   const [duplicating, startDuplicate] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -121,7 +123,7 @@ export function ResumeCard({
                   Print
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-32">
-                  {DOWNLOADS.map(({ format, label }) => (
+                  {downloads.map(({ format, label }) => (
                     <DropdownMenuItem
                       key={format}
                       render={<a href={`/editor/${id}/export/${format}`} download />}

@@ -58,7 +58,7 @@ On the two-column templates, each section goes to the main or side column by its
 
 The two-column templates also take a color (`options.color`, one of the names in `PALETTES` in `rendering/styles.py`) and print an icon beside each contact line. The icons are inline SVG from `rendering/icons.py`.
 
-The Word download uses the classic single-column layout for every template.
+The Word file is always the classic single-column layout, whatever the template. The web app only offers it for Classic.
 
 To add a template:
 

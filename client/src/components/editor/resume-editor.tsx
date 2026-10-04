@@ -13,6 +13,7 @@ import { useAutosave } from "@/components/editor/use-autosave";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_SIGNED_IN_PATH } from "@/lib/auth/routes";
 import { resumeFormSchema, type ResumeFormValues } from "@/lib/resumes/form";
+import { canDownload } from "@/lib/resumes/formats";
 
 type ResumeEditorProps = {
   resumeId: string;
@@ -32,7 +33,11 @@ type DownloadsProps = {
 
 // The files are rendered from the saved resume, so they wait for autosave to finish.
 function Downloads({ resumeId, control, saved }: DownloadsProps) {
-  const [fullName, email] = useWatch({ control, name: ["full_name", "email"] });
+  const [fullName, email, template] = useWatch({
+    control,
+    name: ["full_name", "email", "template"],
+  });
+  const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, template));
   const reason = !fullName.trim() || !email.trim()
     ? "Add your name and email to download."
     : !saved
@@ -41,7 +46,7 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {DOWNLOADS.map(({ format, label }) =>
+      {downloads.map(({ format, label }) =>
         reason ? (
           <Button key={format} type="button" variant="outline" disabled title={reason}>
             <Download />

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { toFormValues, toResume } from "@/lib/resumes/form";
+import { canDownload } from "@/lib/resumes/formats";
 import { getResume } from "@/lib/resumes/queries";
 import { renderResume } from "@/lib/resumes/render";
 
@@ -27,6 +28,10 @@ export async function GET(
   }
   // The column is untyped jsonb, so normalize it the same way the editor does.
   const data = toResume(toFormValues(resume.title, resume.data));
+  // The buttons don't offer this, so it's only reached by typing the address.
+  if (!canDownload(format, data.options?.template ?? "classic")) {
+    notFound();
+  }
   if (!data.full_name || !data.email) {
     return new Response("Add your name and email before downloading.", { status: 400 });
   }
