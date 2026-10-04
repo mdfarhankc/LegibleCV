@@ -11,11 +11,12 @@ The default template is built to get through applicant tracking systems: one col
 - Editor split into steps (basics, one per section, output) with autosave.
 - Live preview next to the form, with the page count and a marker where each new page starts.
 - Three templates: Classic, Side panel, Banner.
+- On the Side panel and Banner templates: an optional photo you position yourself, a choice of six colors, and icons beside the contact details.
 - ATS mode on Classic: plain black text and link addresses printed out.
 - PDF and Word export.
 - Two resumes per account by default. The limit is stored per user and enforced in the database.
 
-Not done yet: photos on resumes, rate limiting on the render service, deployment.
+Not done yet: rate limiting on the render service, deployment.
 
 ## How it fits together
 
@@ -27,7 +28,7 @@ client (Next.js)  ──►  Supabase (Postgres, Auth)
 
 - `client/` - the web app. All database and render calls go through its server side, so the browser never holds a token or talks to the other services directly.
 - `render_service/` - takes resume JSON and returns a preview, a PDF or a DOCX. It stores nothing.
-- `supabase/` - migrations. Row level security keeps each user's resumes private, and a trigger enforces the resume limit.
+- `supabase/` - migrations. Row level security keeps each user's resumes private, and a trigger enforces the resume limit. Photos sit in a private Storage bucket with the same per-user rule.
 
 The resume format is defined once, as Pydantic models in the render service. The client's TypeScript types are generated from it.
 
@@ -67,7 +68,8 @@ bunx supabase db push
 In the dashboard, under Authentication:
 
 - URL Configuration: set the Site URL to `http://localhost:3000` and add `http://localhost:3000/**` to the redirect URLs.
-- Emails: point the links at the app, so it can verify them itself.
+- Emails: the default templates work as they are. Their links come back to `/auth/callback`, which only works in the browser the request was made from.
+- Emails with custom SMTP (optional): templates can be edited once SMTP is set up. Pointing the links at `/auth/confirm` makes them work in any browser:
   - Confirm signup: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
   - Reset password: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`
   - Change email address: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change`

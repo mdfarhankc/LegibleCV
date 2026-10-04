@@ -11,7 +11,7 @@ FastAPI, with WeasyPrint for PDFs and python-docx for Word files.
 - `POST /v1/render/pdf` - PDF download
 - `POST /v1/render/docx` - Word download
 
-The request body is the `Resume` model in `app/schemas/resume.py`. Full docs at `/docs` (disabled in production).
+The request body is the `Resume` model in `app/schemas/resume.py`. A photo is sent inside it as a base64 JPEG (at most 300 KB), never as a link. Full docs at `/docs` (disabled in production).
 
 ## Development
 
@@ -49,10 +49,12 @@ docker run -p 8080:8080 -e SUPABASE_URL=... render-service
 ## Templates
 
 - `classic` - one column. The only template with an ATS mode.
-- `sidepanel` - a tinted left panel with the name on top.
-- `banner` - a dark band across the top and a narrow right column.
+- `sidepanel` - a tinted left panel with the name on top. Prints the photo if there is one.
+- `banner` - a dark band across the top and a narrow right column. Prints the photo if there is one.
 
 On the two-column templates, each section goes to the main or side column by its `placement`. `auto` puts skills, bullet lists and one-line lists in the side column, and text and entries in the main one.
+
+The two-column templates also take a color (`options.color`, one of the names in `PALETTES` in `rendering/styles.py`) and print an icon beside each contact line. The icons are inline SVG from `rendering/icons.py`.
 
 The Word download uses the classic single-column layout for every template.
 
@@ -70,7 +72,7 @@ To add a template:
 
 User text is escaped by Jinja2 and never treated as HTML. Bullets and descriptions support `**bold**` and nothing else.
 
-WeasyPrint fetches every URL a document references. The service gives it a fetcher that only serves the bundled font files, so a resume can't make the server request anything else.
+WeasyPrint fetches every URL a document references. The service gives it a fetcher that only serves the bundled font files and the photo embedded in the request, so a resume can't make the server request anything else.
 
 ## Fonts
 
@@ -78,3 +80,5 @@ Bundled in `app/static/fonts`, both under the SIL Open Font License:
 
 - Carlito (classic, sidepanel) - same metrics as Calibri. DOCX files use Calibri directly.
 - Poppins (banner).
+
+The contact icons are from [Lucide](https://lucide.dev). Its license is in `app/static/icons`.
