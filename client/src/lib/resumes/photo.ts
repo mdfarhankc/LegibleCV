@@ -67,9 +67,13 @@ export async function loadPhoto(
   return photo;
 }
 
-async function listFiles(supabase: Supabase, folder: string): Promise<string[]> {
-  const { data } = await supabase.storage.from(PHOTO_BUCKET).list(folder, { limit: 1000 });
-  return (data ?? []).map((item) => `${folder}/${item.name}`);
+// Null when the listing failed, which is not the same as an empty folder.
+async function listFiles(supabase: Supabase, folder: string): Promise<string[] | null> {
+  const { data, error } = await supabase.storage.from(PHOTO_BUCKET).list(folder, { limit: 1000 });
+  if (error || !data) {
+    return null;
+  }
+  return data.map((item) => `${folder}/${item.name}`);
 }
 
 // Removes everything in the resume's folder, including files a failed upload left behind.
@@ -79,15 +83,23 @@ export async function removeResumePhotos(
   resumeId: string,
 ): Promise<void> {
   const files = await listFiles(supabase, `${userId}/${resumeId}`);
-  if (files.length > 0) {
+  if (files && files.length > 0) {
     await supabase.storage.from(PHOTO_BUCKET).remove(files);
   }
 }
 
-// Supabase refuses to delete a user who still owns stored files.
+// Supabase refuses to delete a user who still owns stored files. False means some may be
+// left, so the account must not be deleted yet.
 export async function removeAllPhotos(supabase: Supabase, userId: string): Promise<boolean> {
   const folders = await listFiles(supabase, userId);
-  const files = (await Promise.all(folders.map((folder) => listFiles(supabase, folder)))).flat();
+  if (!folders) {
+    return false;
+  }
+  const listings = await Promise.all(folders.map((folder) => listFiles(supabase, folder)));
+  if (listings.includes(null)) {
+    return false;
+  }
+  const files = listings.flatMap((listing) => listing ?? []);
   if (files.length === 0) {
     return true;
   }

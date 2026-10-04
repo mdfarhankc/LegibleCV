@@ -9,7 +9,13 @@ import type { Resume } from "@/types/resume";
 
 export type RenderFormat = "preview" | "pdf" | "docx";
 
-export type RenderFailure = { ok: false; status: number; message: string };
+export type RenderFailure = {
+  ok: false;
+  status: number;
+  message: string;
+  // The service didn't answer, which is what a sleeping instance looks like. Worth retrying.
+  unavailable: boolean;
+};
 export type RenderSuccess = { ok: true; response: Response };
 
 function failureMessage(status: number): string {
@@ -18,6 +24,12 @@ function failureMessage(status: number): string {
   }
   if (status === 422) {
     return "Part of this resume can't be rendered yet. Check for very long or unusual values.";
+  }
+  if (status === 429) {
+    return "Too many requests in a short time. Wait a few seconds and try again.";
+  }
+  if (status === 413) {
+    return "This resume is too large to render.";
   }
   return "The resume couldn't be rendered. Try again in a moment.";
 }
@@ -34,7 +46,7 @@ export async function renderResume(
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!user || !token) {
-    return { ok: false, status: 401, message: failureMessage(401) };
+    return { ok: false, status: 401, message: failureMessage(401), unavailable: false };
   }
 
   // Only the two-column templates print a photo, and the Word file never does.
@@ -58,11 +70,18 @@ export async function renderResume(
       ok: false,
       status: 503,
       message: "The render service isn't reachable. Try again in a moment.",
+      unavailable: true,
     };
   }
 
   if (!response.ok) {
-    return { ok: false, status: response.status, message: failureMessage(response.status) };
+    return {
+      ok: false,
+      status: response.status,
+      message: failureMessage(response.status),
+      // What a host answers with while the service is still starting.
+      unavailable: [502, 503, 504].includes(response.status),
+    };
   }
   return { ok: true, response };
 }

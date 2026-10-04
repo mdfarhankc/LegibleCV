@@ -178,7 +178,8 @@ export async function saveResume(id: string, values: unknown): Promise<SaveResul
 
 export type PreviewResult =
   | { ok: true; html: string; pageCount: number | null }
-  | { ok: false; message: string };
+  // `unavailable` means the render service didn't answer and the preview should try again.
+  | { ok: false; message: string; unavailable?: boolean };
 
 // The PDF embeds the template's font. The preview frame loads the same fonts, so line breaks match.
 const PREVIEW_FONT_LINK =
@@ -206,7 +207,7 @@ export async function renderPreview(values: unknown): Promise<PreviewResult> {
     parsed.data.photo_path,
   );
   if (!result.ok) {
-    return { ok: false, message: result.message };
+    return { ok: false, message: result.message, unavailable: result.unavailable };
   }
 
   // How many pages the PDF will have. Only the render service's PDF layout knows this.

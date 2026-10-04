@@ -4,10 +4,14 @@ import { LoaderCircle } from "lucide-react";
 import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { renderPreview } from "@/lib/resumes/actions";
+import { type PreviewResult, renderPreview } from "@/lib/resumes/actions";
 import type { ResumeFormValues } from "@/lib/resumes/form";
 
 const DELAY_MS = 1000;
+// A sleeping render service can take a minute to start. The preview keeps asking meanwhile.
+const SLOW_AFTER_MS = 4000;
+const RETRY_DELAY_MS = 3000;
+const MAX_RETRIES = 6;
 // CSS pixels at 96 per inch, matching the page the render service lays out.
 const PAGE_PX = {
   A4: { width: 794, height: 1123 },
@@ -26,21 +30,34 @@ export function PreviewPane() {
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // The render service is taking long enough that it's probably starting up.
+  const [starting, setStarting] = useState(false);
   const latestRequest = useRef(0);
 
   useEffect(() => {
     const request = ++latestRequest.current;
-    const timer = setTimeout(async () => {
+    let timer: ReturnType<typeof setTimeout>;
+    let slowTimer: ReturnType<typeof setTimeout>;
+
+    async function load(attempt: number) {
       setLoading(true);
-      const result = await renderPreview(getValues()).catch(() => ({
-        ok: false as const,
+      slowTimer = setTimeout(() => setStarting(true), SLOW_AFTER_MS);
+      const result: PreviewResult = await renderPreview(getValues()).catch(() => ({
+        ok: false,
         message: "The preview couldn't be loaded. Check your connection.",
       }));
+      clearTimeout(slowTimer);
       // A newer change is already on its way; drop this answer.
       if (request !== latestRequest.current) {
         return;
       }
+      if (!result.ok && result.unavailable && attempt < MAX_RETRIES) {
+        setStarting(true);
+        timer = setTimeout(() => void load(attempt + 1), RETRY_DELAY_MS);
+        return;
+      }
       setLoading(false);
+      setStarting(false);
       if (result.ok) {
         setHtml(result.html);
         setPageCount(result.pageCount);
@@ -49,8 +66,13 @@ export function PreviewPane() {
         // Keep the last good render on screen and say what went wrong.
         setMessage(result.message);
       }
-    }, DELAY_MS);
-    return () => clearTimeout(timer);
+    }
+
+    timer = setTimeout(() => void load(0), DELAY_MS);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(slowTimer);
+    };
   }, [watched, getValues]);
 
   // The page is rendered at its real width and scaled down to fit the column.
@@ -106,7 +128,9 @@ export function PreviewPane() {
         {loading && (
           <>
             <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden="true" />
-            Updating preview...
+            {starting
+              ? "Starting the preview service. This can take up to a minute."
+              : "Updating preview..."}
           </>
         )}
         {!loading && message && <span className="text-destructive">{message}</span>}

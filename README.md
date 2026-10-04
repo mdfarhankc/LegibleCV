@@ -16,7 +16,7 @@ The default template is built to get through applicant tracking systems: one col
 - PDF and Word export.
 - Two resumes per account by default. The limit is stored per user and enforced in the database.
 
-Not done yet: rate limiting on the render service, deployment.
+Not done yet: deployment.
 
 ## How it fits together
 
