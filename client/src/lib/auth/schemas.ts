@@ -21,15 +21,7 @@ export const signupSchema = z.object({
 
 export const emailSchema = z.object({ email });
 
-export const newPasswordSchema = z
-  .object({
-    password: newPassword,
-    confirm: z.string().min(1, "Confirm password is required."),
-  })
-  .refine((value) => value.password === value.confirm, {
-    path: ["confirm"],
-    message: "The passwords don't match.",
-  });
+export const newPasswordSchema = z.object({ password: newPassword });
 
 export const OAUTH_PROVIDERS = ["google", "github"] as const;
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number];

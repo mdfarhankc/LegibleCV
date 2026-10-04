@@ -57,7 +57,7 @@ export default async function SettingsPage() {
 
       <Section
         title="Password"
-        description="At least 8 characters. If you signed up with Google or GitHub, this adds a password so you can also log in with your email."
+        description="If you signed up with Google or GitHub, this adds a password so you can also log in with your email."
       >
         <PasswordForm action={updatePassword} submitLabel="Change password" />
       </Section>

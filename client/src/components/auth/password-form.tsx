@@ -7,7 +7,7 @@ import { PasswordField } from "@/components/password-field";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/form-state";
 
-type PasswordState = FormState<"password" | "confirm">;
+type PasswordState = FormState<"password">;
 
 type PasswordFormProps = {
   action: (state: PasswordState, formData: FormData) => Promise<PasswordState>;
@@ -25,14 +25,8 @@ export function PasswordForm({ action, submitLabel }: PasswordFormProps) {
         autoComplete="new-password"
         required
         minLength={8}
+        hint="At least 8 characters."
         errors={state?.fieldErrors?.password}
-      />
-      <PasswordField
-        name="confirm"
-        label="Repeat new password"
-        autoComplete="new-password"
-        required
-        errors={state?.fieldErrors?.confirm}
       />
       <FormMessage state={state} />
       <Button type="submit" className="justify-self-start" disabled={pending}>

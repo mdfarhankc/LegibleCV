@@ -13,14 +13,13 @@ import type { FormState } from "@/lib/form-state";
 import { removeAllPhotos } from "@/lib/resumes/photo";
 import { createClient } from "@/lib/supabase/server";
 
-type PasswordState = FormState<"password" | "confirm">;
+type PasswordState = FormState<"password">;
 
 async function changePassword(formData: FormData): Promise<PasswordState> {
   await requireFreshUser();
 
   const parsed = newPasswordSchema.safeParse({
     password: String(formData.get("password") ?? ""),
-    confirm: String(formData.get("confirm") ?? ""),
   });
   if (!parsed.success) {
     return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
