@@ -9,6 +9,7 @@ from typing import ClassVar
 
 from pydantic import HttpUrl
 
+from app.rendering.icons import ContactKind
 from app.rendering.richtext import Paragraph, parse_paragraphs, parse_runs
 from app.rendering.styles import PAGE_SIZES, PageSize
 from app.schemas.resume import (
@@ -30,6 +31,12 @@ SEPARATOR = "  |  "
 class LinkText:
     text: str
     url: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ContactItem(LinkText):
+    # Picks the icon in the two-column templates.
+    kind: ContactKind = "link"
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,9 +105,10 @@ class SectionView:
 @dataclass(frozen=True, slots=True)
 class ResumeView:
     full_name: str
-    contact: list[LinkText]
+    contact: list[ContactItem]
     sections: list[SectionView]
     ats_mode: bool
+    photo: str | None
     page: PageSize
 
     @property
@@ -184,19 +192,19 @@ def _is_side(section: Section) -> bool:
     return section.placement == "side"
 
 
-def _contact(resume: Resume, *, print_addresses: bool) -> list[LinkText]:
-    items: list[LinkText] = []
+def _contact(resume: Resume, *, print_addresses: bool) -> list[ContactItem]:
+    items: list[ContactItem] = []
     if resume.location:
-        items.append(LinkText(resume.location))
-    items.append(LinkText(resume.email, f"mailto:{resume.email}"))
+        items.append(ContactItem(resume.location, kind="location"))
+    items.append(ContactItem(resume.email, f"mailto:{resume.email}", "email"))
     if resume.phone:
-        items.append(LinkText(resume.phone))
+        items.append(ContactItem(resume.phone, kind="phone"))
     for link in resume.links:
         # ATS parsers often drop hyperlink targets, so the address is printed as text there.
         # The two-column templates list contact details one per line, where a bare label
         # ("LinkedIn") says nothing, so they print the address too.
         text = short_url(link.url) if print_addresses else link.label
-        items.append(LinkText(text, url_text(link.url)))
+        items.append(ContactItem(text, url_text(link.url), "link"))
     return items
 
 
@@ -214,5 +222,6 @@ def build_view(resume: Resume) -> ResumeView:
         contact=_contact(resume, print_addresses=ats_mode or not classic),
         sections=sections,
         ats_mode=ats_mode,
+        photo=None if classic else resume.photo,
         page=PAGE_SIZES[resume.options.page_size],
     )

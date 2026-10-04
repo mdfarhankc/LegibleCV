@@ -1,6 +1,6 @@
 """Style tokens shared by the HTML/PDF and DOCX renderers of each template."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +73,7 @@ class SidePanelStyle:
     margin_y_in: float = 0.5
     panel_width_pct: int = 33
     panel_pad_in: float = 0.3
+    photo_in: float = 1.15
     main_pad_left_in: float = 0.4
     main_pad_right_in: float = 0.5
 
@@ -99,6 +100,7 @@ class BannerStyle:
     side_width_pct: int = 32
     edge_pad_in: float = 0.55
     gutter_in: float = 0.32
+    photo_in: float = 1.1
 
     band_color: str = "2e3443"
     band_text_color: str = "ffffff"
@@ -116,3 +118,40 @@ class BannerStyle:
 
 SIDE_PANEL = SidePanelStyle()
 BANNER = BannerStyle()
+
+
+@dataclass(frozen=True, slots=True)
+class Palette:
+    strong: str  # behind white text: the side panel's cap, the banner's band
+    accent: str  # colored text on white
+    tint: str  # the side panel's background
+
+
+# The client repeats these values for its thumbnails, in client/src/lib/resumes/colors.ts.
+PALETTES: dict[str, Palette] = {
+    "navy": Palette("0d1746", "1c3faa", "eef0f6"),
+    "slate": Palette("2e3443", "475069", "eff0f3"),
+    "teal": Palette("0f4c4a", "0f6e6a", "e9f3f2"),
+    "forest": Palette("1e4a2c", "2a6b3f", "ecf3ee"),
+    "maroon": Palette("5c1a26", "8c2636", "f6ecee"),
+    "plum": Palette("41205a", "6a3791", "f2ecf6"),
+}
+
+Style = ClassicStyle | SidePanelStyle | BannerStyle
+
+
+def style_for(template: str, color: str) -> Style:
+    """The template's style in the chosen color. "default" and classic keep their own."""
+    palette = PALETTES.get(color)
+    if template == "sidepanel":
+        if palette is None:
+            return SIDE_PANEL
+        return replace(
+            SIDE_PANEL,
+            cap_color=palette.strong,
+            accent_color=palette.accent,
+            panel_color=palette.tint,
+        )
+    if template == "banner":
+        return BANNER if palette is None else replace(BANNER, band_color=palette.strong)
+    return CLASSIC

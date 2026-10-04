@@ -9,6 +9,7 @@ from app.schemas.fields import (
     OptionalLongText,
     OptionalPhone,
     OptionalShortText,
+    Photo,
     ShortItems,
     ShortText,
 )
@@ -85,10 +86,14 @@ Section = Annotated[
 
 
 Template = Literal["classic", "sidepanel", "banner"]
+# "default" is each template's own color. The names are defined in rendering/styles.py.
+Color = Literal["default", "navy", "slate", "teal", "forest", "maroon", "plum"]
 
 
 class ResumeOptions(Model):
     template: Template = "classic"
+    # Only the two-column templates have a color.
+    color: Color = "default"
     # Plain text and printed link addresses. Only the classic template has an ATS variant.
     ats_mode: bool = False
     page_size: Literal["A4", "Letter"] = "A4"
@@ -99,6 +104,8 @@ class Resume(Model):
     email: EmailStr
     phone: OptionalPhone = None
     location: OptionalShortText = None
+    # A JPEG data URI. Printed by the two-column templates only.
+    photo: Photo | None = None
     links: Annotated[list[Link], Field(max_length=10)] = []
     sections: Annotated[list[Section], Field(max_length=20)] = []
     options: ResumeOptions = Field(default_factory=ResumeOptions)

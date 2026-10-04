@@ -73,6 +73,15 @@ a { color: inherit; text-decoration: none; }
   /* Curved lower edge. */
   border-radius: 0 0 50% 50% / 0 0 0.5in 0.5in;
 }
+.photo {
+  display: block;
+  width: {{ style.photo_in }}in;
+  height: {{ style.photo_in }}in;
+  margin: 0 auto 10pt;
+  border: 2pt solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+}
 h1 {
   font-size: {{ style.name_pt }}pt;
   font-weight: 700;
@@ -116,6 +125,9 @@ li::before {
 .side { font-size: {{ style.small_pt }}pt; }
 .side h2 { font-size: {{ style.heading_pt - 1 }}pt; }
 .side .contact-line, .side .line { margin-bottom: 4pt; overflow-wrap: anywhere; }
+/* The icon hangs in the left padding, so a wrapped address lines up under its first line. */
+.side .contact-line { padding-left: 1.6em; }
+.icon { width: 1.1em; height: 1.1em; margin: 0 0.5em 0 -1.6em; vertical-align: -0.2em; }
 .side .pair { margin-bottom: 6pt; }
 .side .pair-label { color: var(--muted); }
 .side li::before { content: "\25AA"; color: var(--cap); }
@@ -124,11 +136,16 @@ li::before {
 </head>
 <body>
 <aside class="side">
-  <div class="cap"><h1>{{ view.full_name }}</h1></div>
+  <div class="cap">
+    {% if view.photo %}
+    <img class="photo" src="{{ view.photo }}" alt="">
+    {% endif %}
+    <h1>{{ view.full_name }}</h1>
+  </div>
   <section>
     <h2>Contact</h2>
     {% for item in view.contact %}
-    <p class="contact-line">{{ blocks.link(item) }}</p>
+    <p class="contact-line">{{ icon(item.kind, style.cap_color) | safe }}{{ blocks.link(item) }}</p>
     {% endfor %}
   </section>
   {% for item in view.side_sections %}

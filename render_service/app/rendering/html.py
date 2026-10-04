@@ -3,16 +3,15 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from weasyprint import HTML
 
-from app.core.url_fetcher import FontOnlyURLFetcher
-from app.rendering.styles import BANNER, CLASSIC, SIDE_PANEL
+from app.core.url_fetcher import ResumeURLFetcher
+from app.rendering.icons import icon
+from app.rendering.styles import style_for
 from app.rendering.view import SEPARATOR, build_view
 from app.schemas.resume import Resume
 
 _APP_DIR = Path(__file__).resolve().parent.parent
 _STATIC_DIR = _APP_DIR / "static"
 FONTS_DIR = _STATIC_DIR / "fonts"
-
-_TEMPLATE_STYLES = {"classic": CLASSIC, "sidepanel": SIDE_PANEL, "banner": BANNER}
 
 _env = Environment(
     loader=FileSystemLoader(_APP_DIR / "templates"),
@@ -21,13 +20,14 @@ _env = Environment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
+_env.globals["icon"] = icon
 
 
 def render_html(resume: Resume) -> str:
-    template_name = resume.options.template
-    return _env.get_template(f"{template_name}.html").render(
+    options = resume.options
+    return _env.get_template(f"{options.template}.html").render(
         view=build_view(resume),
-        style=_TEMPLATE_STYLES[template_name],
+        style=style_for(options.template, options.color),
         separator=SEPARATOR,
     )
 
@@ -36,7 +36,7 @@ def _document(html: str) -> HTML:
     return HTML(
         string=html,
         base_url=f"{_STATIC_DIR.as_uri()}/",
-        url_fetcher=FontOnlyURLFetcher(FONTS_DIR),
+        url_fetcher=ResumeURLFetcher(FONTS_DIR),
     )
 
 
