@@ -130,6 +130,9 @@ li::before {
 .icon { width: 1.1em; height: 1.1em; margin: 0 0.5em 0 -1.6em; vertical-align: -0.2em; }
 .side .pair { margin-bottom: 6pt; }
 .side .pair-label { color: var(--muted); }
+/* Too narrow for a title and its dates side by side, so the dates go underneath. */
+.side .row { display: block; }
+.side .dates { display: block; color: var(--muted); font-weight: 400; }
 .side li::before { content: "\25AA"; color: var(--cap); }
 .side li { margin: 3pt 0; }
 </style>
