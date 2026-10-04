@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from collections.abc import Awaitable, Callable
+
+from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import health, render
 from app.config import Settings, get_settings
+from app.core.rate_limit import RateLimiter
 from app.core.security import TokenVerifier
 
 
@@ -19,6 +23,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.token_verifier = (
         None if settings.auth_disabled else TokenVerifier.from_url(settings.jwks_url)
     )
+    app.state.rate_limiter = RateLimiter(settings.rate_limit_per_minute)
+
+    @app.middleware("http")
+    async def limit_body_size(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        # Turned away on the declared size, before any of the body is read. The server
+        # doesn't accept more bytes than a request declares.
+        if request.method == "POST":
+            declared = request.headers.get("content-length", "")
+            if not declared.isdecimal():
+                return JSONResponse(
+                    {"detail": "Content-Length is required"}, status.HTTP_411_LENGTH_REQUIRED
+                )
+            if int(declared) > settings.max_body_bytes:
+                return JSONResponse(
+                    {"detail": "Request body too large"},
+                    status.HTTP_413_CONTENT_TOO_LARGE,
+                )
+        return await call_next(request)
 
     if settings.allowed_origins:
         app.add_middleware(

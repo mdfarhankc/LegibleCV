@@ -9,7 +9,7 @@ import re
 from fastapi import APIRouter, Depends, Response
 from fastapi.responses import HTMLResponse
 
-from app.dependencies import get_current_user
+from app.dependencies import enforce_rate_limit
 from app.rendering.html import render_pdf, render_preview
 from app.rendering.word import render_docx
 from app.schemas.resume import Resume
@@ -19,13 +19,18 @@ DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingm
 
 # Rendered resumes contain personal data; never let proxies or browsers cache them.
 _NO_STORE = {"Cache-Control": "no-store"}
-_AUTH_ERRORS = {401: {"description": "Missing, invalid, or expired token"}}
+_ERRORS = {
+    401: {"description": "Missing, invalid, or expired token"},
+    413: {"description": "Request body too large"},
+    429: {"description": "Too many requests"},
+}
 
 router = APIRouter(
     prefix="/v1/render",
     tags=["render"],
-    dependencies=[Depends(get_current_user)],
-    responses=_AUTH_ERRORS,
+    # Checks the token first, then counts the request against that user.
+    dependencies=[Depends(enforce_rate_limit)],
+    responses=_ERRORS,
 )
 
 

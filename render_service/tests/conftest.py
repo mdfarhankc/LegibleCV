@@ -19,7 +19,14 @@ SUPABASE_URL = "https://example.supabase.co"
 
 @pytest.fixture(autouse=True)
 def _isolate_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("ENVIRONMENT", "SUPABASE_URL", "AUTH_DISABLED", "ALLOWED_ORIGINS"):
+    for name in (
+        "ENVIRONMENT",
+        "SUPABASE_URL",
+        "AUTH_DISABLED",
+        "ALLOWED_ORIGINS",
+        "RATE_LIMIT_PER_MINUTE",
+        "MAX_BODY_BYTES",
+    ):
         monkeypatch.delenv(name, raising=False)
 
 

@@ -1,10 +1,12 @@
 import logging
+import math
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config import Settings
+from app.core.rate_limit import RateLimiter
 from app.core.security import (
     AuthenticatedUser,
     AuthUnavailableError,
@@ -44,3 +46,17 @@ def get_current_user(
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE, "Authentication is temporarily unavailable"
         ) from exc
+
+
+def enforce_rate_limit(
+    request: Request,
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+) -> None:
+    limiter: RateLimiter = request.app.state.rate_limiter
+    wait = limiter.retry_after(user.id)
+    if wait is not None:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            "Too many requests. Try again shortly.",
+            headers={"Retry-After": str(math.ceil(wait))},
+        )

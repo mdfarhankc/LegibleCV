@@ -37,6 +37,8 @@ uv run ruff check app tests
 
 See `.env.example`. In production you need `SUPABASE_URL`, which is where the service fetches the keys to verify tokens.
 
+Each user gets `RATE_LIMIT_PER_MINUTE` render requests a minute (60 by default) and bodies over `MAX_BODY_BYTES` are refused. The count is kept in memory, so it is per instance.
+
 `ALLOWED_ORIGINS` only matters if a browser calls the service directly. The web app calls it from its own server, so it can stay empty there.
 
 ## Production

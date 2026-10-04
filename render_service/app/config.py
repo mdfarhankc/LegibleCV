@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Annotated, Literal, Self
 
-from pydantic import HttpUrl, field_validator, model_validator
+from pydantic import Field, HttpUrl, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     supabase_url: HttpUrl | None = None
     auth_disabled: bool = False
     allowed_origins: Annotated[list[str], NoDecode] = []
+    # Render requests each user may make per minute. A preview is a full PDF layout.
+    rate_limit_per_minute: int = Field(default=60, gt=0)
+    # Largest request body accepted. A resume with a photo is well under half of this.
+    max_body_bytes: int = Field(default=1_000_000, gt=0)
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
