@@ -44,6 +44,11 @@ class SkillGroup(Model):
     items: ShortItems = []
 
 
+class Detail(Model):
+    label: Label
+    value: ShortText
+
+
 Placement = Literal["auto", "main", "side"]
 
 
@@ -69,6 +74,13 @@ class SkillsSection(SectionBase):
     groups: Annotated[list[SkillGroup], Field(max_length=20)] = []
 
 
+class DetailsSection(SectionBase):
+    """Label and value pairs: nationality, visa status, date of birth."""
+
+    type: Literal["details"] = "details"
+    items: Annotated[list[Detail], Field(max_length=20)] = []
+
+
 class BulletsSection(SectionBase):
     type: Literal["bullets"] = "bullets"
     items: Bullets = []
@@ -80,7 +92,7 @@ class InlineSection(SectionBase):
 
 
 Section = Annotated[
-    TextSection | EntriesSection | SkillsSection | BulletsSection | InlineSection,
+    TextSection | EntriesSection | SkillsSection | DetailsSection | BulletsSection | InlineSection,
     Field(discriminator="type"),
 ]
 

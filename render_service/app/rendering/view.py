@@ -14,6 +14,7 @@ from app.rendering.richtext import Paragraph, parse_paragraphs, parse_runs
 from app.rendering.styles import PAGE_SIZES, PageSize
 from app.schemas.resume import (
     BulletsSection,
+    DetailsSection,
     EntriesSection,
     Entry,
     InlineSection,
@@ -72,6 +73,8 @@ class EntriesBlock:
 
 @dataclass(frozen=True, slots=True)
 class SkillsBlock:
+    """Label and text pairs. Skill groups and personal details both print this way."""
+
     kind: ClassVar[str] = "skills"
     groups: list[tuple[str, str]]
 
@@ -176,6 +179,8 @@ def _block(section: Section) -> Block | None:
         case SkillsSection(groups=groups):
             rows = [(group.label, ", ".join(group.items)) for group in groups if group.items]
             return SkillsBlock(rows) if rows else None
+        case DetailsSection(items=items):
+            return SkillsBlock([(item.label, item.value) for item in items]) if items else None
         case BulletsSection(items=items):
             return BulletsBlock([parse_runs(item) for item in items]) if items else None
         case InlineSection(items=items):
@@ -183,7 +188,7 @@ def _block(section: Section) -> Block | None:
 
 
 # Short lists read well in a narrow column; long prose and dated entries need the wide one.
-_SIDE_BY_DEFAULT = (SkillsSection, BulletsSection, InlineSection)
+_SIDE_BY_DEFAULT = (SkillsSection, DetailsSection, BulletsSection, InlineSection)
 
 
 def _is_side(section: Section) -> bool:
