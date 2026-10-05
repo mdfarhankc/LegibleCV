@@ -8,7 +8,12 @@ import { requireFreshUser } from "@/lib/auth/dal";
 import { callbackUrl } from "@/lib/auth/origin";
 import { profileSchema } from "@/lib/auth/profile";
 import { DEFAULT_SIGNED_IN_PATH, SETTINGS_PATH } from "@/lib/auth/routes";
-import { emailSchema, newPasswordSchema } from "@/lib/auth/schemas";
+import {
+  emailSchema,
+  newPasswordSchema,
+  OAUTH_PROVIDER_LABELS,
+  oauthProviderSchema,
+} from "@/lib/auth/schemas";
 import type { FormState } from "@/lib/form-state";
 import { removeAllPhotos } from "@/lib/resumes/photo";
 import { createClient } from "@/lib/supabase/server";
@@ -145,4 +150,66 @@ export async function updateProfile(
   await supabase.auth.refreshSession();
   revalidatePath("/", "layout");
   return { success: "Profile saved." };
+}
+
+// Connects or disconnects a Google or GitHub account. The button pressed says which.
+export async function changeProviderConnection(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireFreshUser();
+
+  const provider = oauthProviderSchema.safeParse(formData.get("provider"));
+  const intent = formData.get("intent");
+  if (!provider.success || (intent !== "connect" && intent !== "disconnect")) {
+    return { message: "That didn't work. Try again." };
+  }
+  const label = OAUTH_PROVIDER_LABELS[provider.data];
+  const supabase = await createClient();
+
+  if (intent === "connect") {
+    const { data, error } = await supabase.auth.linkIdentity({
+      provider: provider.data,
+      options: { redirectTo: await callbackUrl(SETTINGS_PATH) },
+    });
+    if (error || !data.url) {
+      return {
+        message:
+          error?.code === "manual_linking_disabled"
+            ? "Connecting accounts is turned off for this app."
+            : `Could not start connecting ${label}. Try again.`,
+      };
+    }
+    redirect(data.url);
+  }
+
+  // Looked up here instead of trusting an id from the page.
+  const { data, error: listError } = await supabase.auth.getUserIdentities();
+  const identity = data?.identities.find((item) => item.provider === provider.data);
+  if (listError || !identity) {
+    return { message: `${label} isn't connected to this account.` };
+  }
+  const { error } = await supabase.auth.unlinkIdentity(identity);
+  if (error) {
+    return {
+      message:
+        error.code === "single_identity_not_deletable"
+          ? `${label} is your only way to log in. Connect another account first.`
+          : `Could not disconnect ${label}. Try again.`,
+    };
+  }
+
+  revalidatePath(SETTINGS_PATH);
+  return { success: `${label} disconnected.` };
+}
+
+export async function signOutOtherDevices(): Promise<FormState> {
+  await requireFreshUser();
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut({ scope: "others" });
+  if (error) {
+    return { message: "Could not log out the other devices. Try again." };
+  }
+  return { success: "Done. Other devices are logged out within the hour." };
 }
