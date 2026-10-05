@@ -1,3 +1,8 @@
+"use client";
+
+import { LoaderCircle } from "lucide-react";
+import { useFormStatus } from "react-dom";
+
 import { Button } from "@/components/ui/button";
 import { signInWithProvider } from "@/lib/auth/actions";
 import type { OAuthProvider } from "@/lib/auth/schemas";
@@ -38,16 +43,32 @@ const PROVIDERS: { id: OAuthProvider; label: string; icon: () => React.JSX.Eleme
   { id: "github", label: "Continue with GitHub", icon: GitHubIcon },
 ];
 
+// Reads the form's status, so it has to be rendered inside the form.
+function ProviderButtons() {
+  const { pending, data } = useFormStatus();
+  const chosen = pending ? data?.get("provider") : null;
+
+  return PROVIDERS.map(({ id, label, icon: Icon }) => (
+    <Button
+      key={id}
+      type="submit"
+      name="provider"
+      value={id}
+      variant="outline"
+      className="w-full"
+      disabled={pending}
+    >
+      {chosen === id ? <LoaderCircle className="motion-safe:animate-spin" /> : <Icon />}
+      {chosen === id ? "Connecting..." : label}
+    </Button>
+  ));
+}
+
 export function OAuthButtons({ next }: { next?: string }) {
   return (
     <form action={signInWithProvider} className="grid gap-2">
       {next && <input type="hidden" name="next" value={next} />}
-      {PROVIDERS.map(({ id, label, icon: Icon }) => (
-        <Button key={id} type="submit" name="provider" value={id} variant="outline" className="w-full">
-          <Icon />
-          {label}
-        </Button>
-      ))}
+      <ProviderButtons />
     </form>
   );
 }

@@ -35,6 +35,8 @@ Everything goes through the server. Pages read data in Server Components, and ch
 
 Photos are positioned in a crop dialog and resized to a 400 px square JPEG in the browser, uploaded through a Server Action, and kept in a private bucket. When a resume is rendered, the server reads the photo and sends it along with the resume.
 
+Passkeys follow the same rule. The server asks Supabase for a challenge and verifies the answer (`lib/auth/passkey-actions.ts`); the browser only runs the device prompt (`lib/auth/passkey-browser.ts`).
+
 The editor keeps its state in React Hook Form. It saves a second after you stop typing, and asks the render service for a new preview on the same delay.
 
 ## Where things are

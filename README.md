@@ -7,6 +7,7 @@ The default template is built to get through applicant tracking systems: one col
 ## What works
 
 - Sign up with email, Google or GitHub. Password reset, profile, account deletion.
+- In Settings: passkeys as an extra way to log in, connecting and disconnecting Google or GitHub, and logging out of other devices.
 - Dashboard with a thumbnail of each resume. Create, rename, duplicate, delete, print.
 - Editor split into steps (basics, one per section, output) with autosave.
 - Live preview next to the form, with the page count and a marker where each new page starts.
@@ -74,6 +75,8 @@ In the dashboard, under Authentication:
   - Confirm signup: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
   - Reset password: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`
   - Change email address: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change`
+- Passkeys (optional, beta in Supabase): enable them and set the Relying Party ID to the site's domain (`localhost` in development) and the origin to its address (`http://localhost:3000`). A passkey only works on the domain it was made for, so the values change at deployment.
+- Sign In / Providers: turn on manual linking if you want users to connect Google or GitHub to an existing account from Settings. Disconnecting works without it.
 - Providers: enable Google and GitHub if you want social login. Both use `https://<your-project-ref>.supabase.co/auth/v1/callback` as the callback URL.
 
 To give an account more than two resumes, edit `max_resumes` on its row in the `profiles` table. Empty means unlimited.
@@ -85,3 +88,5 @@ docker compose run --rm render-service pytest
 ```
 
 The client has no automated tests yet. `bunx tsc --noEmit` and `bun run lint` are the checks there.
+
+GitHub Actions runs all of this on every pull request and on `main` (`.github/workflows/ci.yml`): the service's formatting, lint, tests and production image build, and the client's lint, type check and build.

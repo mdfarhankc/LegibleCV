@@ -27,7 +27,7 @@ export function LoginForm({ next, notice }: LoginFormProps) {
     <AuthCard
       title="Log in"
       description="Welcome back."
-      oauth={{ next }}
+      oauth={{ next, passkey: true }}
       footer={
         <p>
           No account yet?{" "}

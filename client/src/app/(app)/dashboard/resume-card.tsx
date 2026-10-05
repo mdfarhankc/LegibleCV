@@ -16,7 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { duplicateResume } from "@/lib/resumes/actions";
-import { canDownload } from "@/lib/resumes/formats";
+import { downloadResume } from "@/lib/resumes/download";
+import { canDownload, type DownloadFormat } from "@/lib/resumes/formats";
 import type { ResumePreview } from "@/lib/resumes/preview";
 
 import { DeleteDialog } from "./delete-dialog";
@@ -54,6 +55,15 @@ export function ResumeCard({
   const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, preview.template));
   const [duplicating, startDuplicate] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // The label of the file being prepared. Making it takes a few seconds.
+  const [preparing, setPreparing] = useState<string | null>(null);
+
+  async function download(format: DownloadFormat, label: string) {
+    setError(null);
+    setPreparing(label);
+    setError(await downloadResume(id, format));
+    setPreparing(null);
+  }
 
   function duplicate() {
     setError(null);
@@ -88,7 +98,11 @@ export function ResumeCard({
             </p>
           ) : (
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {duplicating ? "Duplicating..." : editedLabel}
+              {duplicating
+                ? "Duplicating..."
+                : preparing
+                  ? `Preparing ${preparing}...`
+                  : editedLabel}
             </p>
           )}
         </div>
@@ -126,7 +140,8 @@ export function ResumeCard({
                   {downloads.map(({ format, label }) => (
                     <DropdownMenuItem
                       key={format}
-                      render={<a href={`/editor/${id}/export/${format}`} download />}
+                      disabled={preparing !== null}
+                      onClick={() => void download(format, label)}
                     >
                       {label}
                     </DropdownMenuItem>

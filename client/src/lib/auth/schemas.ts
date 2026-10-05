@@ -26,3 +26,7 @@ export const newPasswordSchema = z.object({ password: newPassword });
 export const OAUTH_PROVIDERS = ["google", "github"] as const;
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number];
 export const oauthProviderSchema = z.enum(OAUTH_PROVIDERS);
+export const OAUTH_PROVIDER_LABELS: Record<OAuthProvider, string> = {
+  google: "Google",
+  github: "GitHub",
+};
