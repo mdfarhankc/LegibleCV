@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Settings } from "lucide-react";
+import { LoaderCircle, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { useTransition } from "react";
 
@@ -54,8 +54,13 @@ export function UserMenu({ email, name, avatarUrl }: UserMenuProps) {
           <Settings />
           Settings
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={loggingOut} onClick={() => startLogout(() => logout())}>
-          <LogOut />
+        <DropdownMenuItem
+          // The menu stays open, so the change to "Logging out..." can be seen.
+          closeOnClick={false}
+          disabled={loggingOut}
+          onClick={() => startLogout(() => logout())}
+        >
+          {loggingOut ? <LoaderCircle className="motion-safe:animate-spin" /> : <LogOut />}
           {loggingOut ? "Logging out..." : "Log out"}
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { type Control, FormProvider, useForm, useWatch } from "react-hook-form";
@@ -13,7 +13,8 @@ import { useAutosave } from "@/components/editor/use-autosave";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_SIGNED_IN_PATH } from "@/lib/auth/routes";
 import { resumeFormSchema, type ResumeFormValues } from "@/lib/resumes/form";
-import { canDownload } from "@/lib/resumes/formats";
+import { downloadResume } from "@/lib/resumes/download";
+import { canDownload, type DownloadFormat } from "@/lib/resumes/formats";
 
 type ResumeEditorProps = {
   resumeId: string;
@@ -38,6 +39,17 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
     name: ["full_name", "email", "template"],
   });
   const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, template));
+  // The format being prepared. Making the file takes a few seconds.
+  const [preparing, setPreparing] = useState<DownloadFormat | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function download(format: DownloadFormat) {
+    setError(null);
+    setPreparing(format);
+    setError(await downloadResume(resumeId, format));
+    setPreparing(null);
+  }
+
   const reason = !fullName.trim() || !email.trim()
     ? "Add your name and email to download."
     : !saved
@@ -45,26 +57,33 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
       : null;
 
   return (
-    <div className="flex items-center gap-2">
-      {downloads.map(({ format, label }) =>
-        reason ? (
-          <Button key={format} type="button" variant="outline" disabled title={reason}>
-            <Download />
-            {label}
-          </Button>
-        ) : (
+    <>
+      <div className="flex items-center gap-2">
+        {downloads.map(({ format, label }) => (
           <Button
             key={format}
+            type="button"
             variant="outline"
-            nativeButton={false}
-            render={<a href={`/editor/${resumeId}/export/${format}`} download />}
+            disabled={Boolean(reason) || preparing !== null}
+            title={reason ?? undefined}
+            onClick={() => void download(format)}
           >
-            <Download />
-            {label}
+            {preparing === format ? (
+              <LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />
+            ) : (
+              <Download />
+            )}
+            {preparing === format ? `Preparing ${label}...` : label}
           </Button>
-        ),
+        ))}
+      </div>
+      {/* Takes its own row under the toolbar. */}
+      {error && (
+        <p role="alert" className="basis-full text-right text-sm text-destructive">
+          {error}
+        </p>
       )}
-    </div>
+    </>
   );
 }
 
