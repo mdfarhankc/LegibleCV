@@ -1,0 +1,72 @@
+name: CI
+
+# Runs on every pull request, and again on main after a merge.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch replaces the run that is still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# The jobs only read the code.
+permissions:
+  contents: read
+
+jobs:
+  render-service:
+    name: Render service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The same image as local development, so WeasyPrint has the system libraries it needs.
+      - name: Build the development image
+        run: docker build --target dev --tag render-service:dev render_service
+
+      - name: Check formatting
+        run: docker run --rm render-service:dev ruff format --check app tests
+
+      - name: Lint
+        run: docker run --rm render-service:dev ruff check app tests
+
+      - name: Test
+        run: docker run --rm render-service:dev pytest -q
+
+      # What actually gets deployed. Catches a production build that only fails there.
+      - name: Build the production image
+        run: docker build --target prod --tag render-service:prod render_service
+
+  client:
+    name: Client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    env:
+      # The build only needs these to be present. No real project is contacted.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      # Fails if bun.lock is out of step with package.json.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      # Route types are generated, so they have to exist before the type check.
+      - name: Type check
+        run: bunx next typegen && bunx tsc --noEmit
+
+      - name: Build
+        run: bun run build
