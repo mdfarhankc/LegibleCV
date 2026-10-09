@@ -1,6 +1,5 @@
-// The part of a passkey that has to happen in the browser: asking the device to create one, or
-// to sign in with one. Options and results travel as JSON, which current browsers convert
-// themselves.
+// The one part of a passkey that has to run in the browser: asking the device to create one or
+// to sign in with one. Options and results travel as JSON, which browsers convert themselves.
 
 export function passkeysSupported(): boolean {
   return (

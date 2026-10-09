@@ -1,6 +1,5 @@
-// Colors of the two-column templates. The PDF's colors come from the render service
-// (PALETTES in render_service/app/rendering/styles.py). These are the same values, repeated
-// here so the thumbnails and the color picker can draw them.
+// Colors of the two-column templates. The PDF takes them from the render service (PALETTES in
+// render_service/app/rendering/styles.py). I repeat them here for the thumbnails and the picker.
 
 export const COLORS = ["default", "navy", "slate", "teal", "forest", "maroon", "plum"] as const;
 

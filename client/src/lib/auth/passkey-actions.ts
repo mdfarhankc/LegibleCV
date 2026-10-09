@@ -9,14 +9,13 @@ import { safeRedirectPath } from "@/lib/auth/redirect";
 import { SETTINGS_PATH } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
 
-// A passkey takes two steps. The server asks Supabase for a challenge, the browser has the
-// device sign it (fingerprint, face, or PIN), and the server sends the answer back to Supabase.
-// Only the middle step runs in the browser, so no Supabase client is needed there.
+// I split a passkey into two steps so the browser never needs a Supabase client: the server
+// gets the challenge, the device signs it in the browser, and the server verifies the answer.
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 type Passkeys = Supabase["auth"]["passkey"];
-// The options are plain JSON in the standard WebAuthn shape. Supabase's client types them with
-// its own copy of that shape, so they're returned as the browser's type, which is what reads them.
+// The options are standard WebAuthn JSON. Supabase's client has its own copy of the type, so I
+// return them as the browser's type, which is what reads them.
 type SignInOptions = PublicKeyCredentialRequestOptionsJSON;
 type RegistrationOptions = PublicKeyCredentialCreationOptionsJSON;
 type Credential = Parameters<Passkeys["verifyAuthentication"]>[0]["credential"];

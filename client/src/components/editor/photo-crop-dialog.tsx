@@ -27,7 +27,6 @@ function cropRect(bitmap: ImageBitmap, zoom: number, center: Point) {
   return { left: center.x - side / 2, top: center.y - side / 2, side };
 }
 
-// Keeps the frame inside the picture.
 function clampCenter(bitmap: ImageBitmap, zoom: number, center: Point): Point {
   const half = Math.min(bitmap.width, bitmap.height) / zoom / 2;
   return {
