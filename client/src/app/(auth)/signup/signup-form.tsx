@@ -10,6 +10,7 @@ import { PasswordField } from "@/components/password-field";
 import { Button } from "@/components/ui/button";
 import { signup } from "@/lib/auth/actions";
 import { LOGIN_PATH } from "@/lib/auth/routes";
+import { PRIVACY_PATH, TERMS_PATH } from "@/lib/site";
 
 export function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined);
@@ -74,6 +75,17 @@ export function SignupForm() {
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Creating account..." : "Sign up"}
         </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          By creating an account you agree to the{" "}
+          <Link href={TERMS_PATH} className="text-foreground underline underline-offset-4">
+            terms
+          </Link>{" "}
+          and the{" "}
+          <Link href={PRIVACY_PATH} className="text-foreground underline underline-offset-4">
+            privacy policy
+          </Link>
+          .
+        </p>
       </form>
     </AuthCard>
   );

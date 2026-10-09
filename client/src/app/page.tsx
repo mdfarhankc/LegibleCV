@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import { DEFAULT_SIGNED_IN_PATH, LOGIN_PATH, SIGNUP_PATH } from "@/lib/auth/routes";
+import { PRIVACY_PATH, TERMS_PATH } from "@/lib/site";
 
 const HERO_FACTS = ["Selectable text", "One-column layout", "PDF and Word"];
 
@@ -248,7 +249,7 @@ export default async function HomePage() {
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-24">
-          <div className="flex flex-col items-start gap-6 rounded-3xl bg-[#0046b4] px-7 py-14 text-white sm:px-14 sm:py-20">
+          <div className="flex flex-col items-start gap-6 rounded-3xl bg-(--brand) px-7 py-14 text-white sm:px-14 sm:py-20">
             <h2 className="max-w-2xl font-heading text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl">
               Write it once. Send it anywhere.
             </h2>
@@ -257,7 +258,7 @@ export default async function HomePage() {
             </p>
             <Button
               size="lg"
-              className={`${ctaClass} bg-white text-[#0046b4] hover:bg-white/90`}
+              className={`${ctaClass} bg-white text-(--brand) hover:bg-white/90`}
               nativeButton={false}
               render={<Link href={cta.href} />}
             >
@@ -272,7 +273,13 @@ export default async function HomePage() {
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-5 py-8 text-sm text-muted-foreground">
           <span className="font-heading text-base font-semibold text-foreground">MakeMyResume</span>
           <span>Resumes that software can read.</span>
-          <nav className="flex gap-6 sm:ml-auto">
+          <nav className="flex flex-wrap gap-6 sm:ml-auto">
+            <Link href={PRIVACY_PATH} className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href={TERMS_PATH} className="hover:text-foreground">
+              Terms
+            </Link>
             {signedIn ? (
               <Link href={DEFAULT_SIGNED_IN_PATH} className="hover:text-foreground">
                 Dashboard
