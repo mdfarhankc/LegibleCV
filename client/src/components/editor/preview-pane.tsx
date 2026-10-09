@@ -165,8 +165,8 @@ export function PreviewPane() {
                   className="pointer-events-none absolute inset-x-0 flex items-center gap-2 pr-2"
                   style={{ top }}
                 >
-                  <span className="h-0 flex-1 border-t border-dashed border-[#0046b4]/70" />
-                  <span className="rounded-full bg-[#0046b4] px-2 py-0.5 text-xs font-medium text-white">
+                  <span className="h-0 flex-1 border-t border-dashed border-(--brand)/70" />
+                  <span className="rounded-full bg-(--brand) px-2 py-0.5 text-xs font-medium text-white">
                     Page {index + 2} starts about here
                   </span>
                 </div>
