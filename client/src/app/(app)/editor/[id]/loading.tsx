@@ -1,4 +1,4 @@
-// Shown while the resume loads. Same frame as the editor, so nothing jumps when it arrives.
+// Same frame as the editor, so nothing jumps when the resume arrives.
 export default function EditorLoading() {
   return (
     <div

@@ -39,7 +39,6 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
     name: ["full_name", "email", "template"],
   });
   const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, template));
-  // The format being prepared. Making the file takes a few seconds.
   const [preparing, setPreparing] = useState<DownloadFormat | null>(null);
   const [error, setError] = useState<string | null>(null);
 

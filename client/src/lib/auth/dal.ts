@@ -14,8 +14,8 @@ export type AuthUser = {
   profile: Profile;
 };
 
-// getClaims() verifies the JWT signature against the project's JWKS.
-// getSession() only reads the cookie, so it is never used for auth decisions.
+// I use getClaims() for auth decisions: it verifies the JWT against the project's JWKS.
+// getSession() only reads the cookie, so I never trust it for that.
 export const getUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();

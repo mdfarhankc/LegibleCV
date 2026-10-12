@@ -55,7 +55,6 @@ export function ResumeCard({
   const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, preview.template));
   const [duplicating, startDuplicate] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  // The label of the file being prepared. Making it takes a few seconds.
   const [preparing, setPreparing] = useState<string | null>(null);
 
   async function download(format: DownloadFormat, label: string) {

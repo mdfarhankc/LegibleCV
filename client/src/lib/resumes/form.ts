@@ -22,10 +22,8 @@ const PAGE_SIZES = ["A4", "Letter"] as const;
 export const TEMPLATES = ["classic", "sidepanel", "banner"] as const;
 const PLACEMENTS = ["auto", "main", "side"] as const;
 
-// ---------------------------------------------------------------------------
 // Save schema. Enforces the render service's size limits. Nothing is required,
 // because a resume being written is allowed to be incomplete.
-// ---------------------------------------------------------------------------
 
 const text = (max: number) => z.string().max(max, `Use at most ${max} characters.`);
 
@@ -164,10 +162,6 @@ export type SectionValues = ResumeFormValues["sections"][number];
 export type EntryValues = SectionValues["items"][number];
 export type TemplateName = (typeof TEMPLATES)[number];
 
-// ---------------------------------------------------------------------------
-// New items
-// ---------------------------------------------------------------------------
-
 export function emptyEntry(): EntryValues {
   return {
     title: "",
@@ -211,9 +205,7 @@ export const SECTION_PRESETS: { label: string; type: SectionType; title: string 
   { label: "Custom list", type: "bullets", title: "" },
 ];
 
-// ---------------------------------------------------------------------------
 // Stored JSON -> form. The column is jsonb, so nothing about its shape is assumed.
-// ---------------------------------------------------------------------------
 
 const stored = {
   text: z
@@ -347,9 +339,7 @@ export function toFormValues(
   };
 }
 
-// ---------------------------------------------------------------------------
 // Form -> stored contract
-// ---------------------------------------------------------------------------
 
 const optional = (value: string) => value.trim() || null;
 

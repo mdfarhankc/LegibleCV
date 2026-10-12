@@ -1,8 +1,7 @@
 import type { DownloadFormat } from "@/lib/resumes/formats";
 
-// The file is fetched by script instead of a plain link, so the page can show that it's working
-// and say what went wrong. Making a PDF takes a few seconds, longer if the render service was
-// asleep.
+// I fetch the file with script instead of a plain link, so the page can show progress and say
+// what went wrong. A PDF takes a few seconds, longer when the render service was asleep.
 
 // A sleeping render service doesn't answer the first request. Each try waits up to 20 seconds.
 const ATTEMPTS = 3;

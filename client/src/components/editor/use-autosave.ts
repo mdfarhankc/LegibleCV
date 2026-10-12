@@ -31,7 +31,6 @@ export function useAutosave(resumeId: string, form: UseFormReturn<ResumeFormValu
       // Repeats while changes keep arriving, so the last thing typed is what ends up stored.
       do {
         changedDuringSave.current = false;
-        // Runs the schema and puts any errors on the fields.
         if (!(await form.trigger())) {
           setStatus({ state: "invalid" });
           return;

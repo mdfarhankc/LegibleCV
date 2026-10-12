@@ -23,6 +23,7 @@ The app runs at http://localhost:3000. The preview and the downloads need the re
 - `/editor/[id]/export/pdf` and `/export/docx` - file downloads
 - `/editor/[id]/photo` - the resume's photo, for the editor thumbnail
 - `/settings` - profile, email, password, delete account
+- `/privacy`, `/terms` - the privacy policy and terms of use. The operator name and contact address they show are in `src/lib/site.ts`.
 - `/auth/confirm`, `/auth/callback` - where email links and social logins land
 
 ## How data moves
