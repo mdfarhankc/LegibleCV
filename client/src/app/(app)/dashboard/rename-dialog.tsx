@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import type { FormState } from "@/lib/form-state";
 import { renameResume } from "@/lib/resumes/actions";
+import { RESUME_TITLE_MAX } from "@/lib/resumes/schemas";
 
 type RenameDialogProps = {
   id: string;
@@ -49,7 +50,7 @@ export function RenameDialog({ id, title, open, onOpenChange }: RenameDialogProp
             name="title"
             label="Title"
             required
-            maxLength={120}
+            maxLength={RESUME_TITLE_MAX}
             autoFocus
             value={value}
             onChange={(event) => setValue(event.target.value)}

@@ -12,9 +12,7 @@ from app.core.security import AuthenticatedUser
 from app.dependencies import get_current_user
 from app.main import create_app
 from app.schemas.resume import Resume
-from tests.helpers import FIXTURE, KID
-
-SUPABASE_URL = "https://example.supabase.co"
+from tests.helpers import FIXTURE, KID, SUPABASE_URL
 
 
 @pytest.fixture(autouse=True)
@@ -45,11 +43,16 @@ def resume(resume_data: dict[str, Any]) -> Resume:
     return Resume.model_validate(resume_data)
 
 
+def make_client(user_id: str = "user-1", **settings: Any) -> TestClient:
+    """A client for an app whose requests are all signed in as `user_id`."""
+    app = create_app(make_settings(**settings))
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(id=user_id)
+    return TestClient(app)
+
+
 @pytest.fixture
 def client() -> Iterator[TestClient]:
-    app = create_app(make_settings(allowed_origins=["http://localhost:3000"]))
-    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(id="user-1")
-    with TestClient(app) as test_client:
+    with make_client(allowed_origins=["http://localhost:3000"]) as test_client:
         yield test_client
 
 

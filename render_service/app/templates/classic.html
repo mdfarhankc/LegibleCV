@@ -1,5 +1,4 @@
-{% macro runs(paragraph) %}{% for run in paragraph %}{% if run.bold %}<strong>{{ run.text }}</strong>{% else %}{{ run.text }}{% endif %}{% endfor %}{% endmacro %}
-{% macro link(item) %}{% if item.url %}<a href="{{ item.url }}">{{ item.text }}</a>{% else %}{{ item.text }}{% endif %}{% endmacro %}
+{% from "_blocks.html" import runs, link %}
 {% macro joined(items) %}{% for item in items %}{% if not loop.first %}<span class="sep">{{ separator }}</span>{% endif %}{{ caller(item) }}{% endfor %}{% endmacro %}
 <!doctype html>
 <html lang="en">

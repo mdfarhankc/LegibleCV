@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { duplicateResume } from "@/lib/resumes/actions";
 import { downloadResume } from "@/lib/resumes/download";
-import { canDownload, type DownloadFormat } from "@/lib/resumes/formats";
+import { canDownload, DOWNLOAD_FORMATS, type DownloadFormat } from "@/lib/resumes/formats";
 import type { ResumePreview } from "@/lib/resumes/preview";
 
 import { DeleteDialog } from "./delete-dialog";
@@ -37,10 +37,7 @@ type ResumeCardProps = {
   photoUrl: string | null;
 };
 
-const DOWNLOADS = [
-  { format: "pdf", label: "PDF" },
-  { format: "docx", label: "DOCX" },
-] as const;
+const DOWNLOAD_LABELS: Record<DownloadFormat, string> = { pdf: "PDF", docx: "DOCX" };
 
 export function ResumeCard({
   id,
@@ -52,7 +49,7 @@ export function ResumeCard({
   photoUrl,
 }: ResumeCardProps) {
   const [dialog, setDialog] = useState<"rename" | "delete" | null>(null);
-  const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, preview.template));
+  const downloads = DOWNLOAD_FORMATS.filter((format) => canDownload(format, preview.template));
   const [duplicating, startDuplicate] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [preparing, setPreparing] = useState<string | null>(null);
@@ -136,13 +133,13 @@ export function ResumeCard({
                   Print
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-32">
-                  {downloads.map(({ format, label }) => (
+                  {downloads.map((format) => (
                     <DropdownMenuItem
                       key={format}
                       disabled={preparing !== null}
-                      onClick={() => void download(format, label)}
+                      onClick={() => void download(format, DOWNLOAD_LABELS[format])}
                     >
-                      {label}
+                      {DOWNLOAD_LABELS[format]}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuSubContent>

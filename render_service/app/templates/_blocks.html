@@ -1,4 +1,4 @@
-{# Shared pieces for the two-column templates. Each template styles these classes itself. #}
+{# Shared pieces. classic uses runs and link; the two-column templates use all of them and style the classes themselves. #}
 {% macro runs(paragraph) %}{% for run in paragraph %}{% if run.bold %}<strong>{{ run.text }}</strong>{% else %}{{ run.text }}{% endif %}{% endfor %}{% endmacro %}
 {% macro link(item) %}{% if item.url %}<a href="{{ item.url }}">{{ item.text }}</a>{% else %}{{ item.text }}{% endif %}{% endmacro %}
 
@@ -60,7 +60,7 @@
   <p class="line">{{ text }}</p>
       {% endfor %}
     {% else %}
-  <p>{{ block.items | join("  |  ") }}</p>
+  <p>{{ block.items | join(separator) }}</p>
     {% endif %}
   {% endif %}
 </section>

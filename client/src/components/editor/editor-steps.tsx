@@ -32,6 +32,16 @@ type Step = { kind: "basics" } | { kind: "section"; index: number } | { kind: "o
 
 const BASICS_FIELDS = ["title", "full_name", "email", "phone", "location", "links"] as const;
 
+function stepName(step: Step, sectionTitle: string | undefined): string {
+  if (step.kind === "basics") {
+    return "Basics";
+  }
+  if (step.kind === "output") {
+    return "Output";
+  }
+  return sectionTitle?.trim() || "Untitled section";
+}
+
 function sameStep(a: Step, b: Step): boolean {
   return a.kind === b.kind && (a.kind !== "section" || a.index === (b as typeof a).index);
 }
@@ -57,13 +67,7 @@ function StepNav({ control, steps, current, onSelect, onAdd, canAdd }: StepNavPr
   }, [activePosition]);
 
   function label(step: Step): string {
-    if (step.kind === "basics") {
-      return "Basics";
-    }
-    if (step.kind === "output") {
-      return "Output";
-    }
-    return sections[step.index]?.title.trim() || "Untitled section";
+    return stepName(step, step.kind === "section" ? sections[step.index]?.title : undefined);
   }
 
   // A field on a step that isn't on screen can still block saving, so the step is marked.
@@ -151,14 +155,11 @@ export function EditorSteps({ resumeId }: { resumeId: string }) {
     panel.current?.scrollTo({ top: 0 });
   }
 
-  function stepName(step: Step): string {
-    if (step.kind === "basics") {
-      return "Basics";
-    }
-    if (step.kind === "output") {
-      return "Output";
-    }
-    return getValues(`sections.${step.index}.title`).trim() || "Untitled section";
+  function nameOf(step: Step): string {
+    return stepName(
+      step,
+      step.kind === "section" ? getValues(`sections.${step.index}.title`) : undefined,
+    );
   }
 
   function removeSection(index: number) {
@@ -216,14 +217,14 @@ export function EditorSteps({ resumeId }: { resumeId: string }) {
         {previous ? (
           <Button type="button" variant="outline" size="lg" onClick={() => goTo(previous)}>
             <ArrowLeft />
-            <span className="max-w-56 truncate">{stepName(previous)}</span>
+            <span className="max-w-56 truncate">{nameOf(previous)}</span>
           </Button>
         ) : (
           <span />
         )}
         {next && (
           <Button type="button" size="lg" onClick={() => goTo(next)}>
-            <span className="max-w-64 truncate">Next: {stepName(next)}</span>
+            <span className="max-w-64 truncate">Next: {nameOf(next)}</span>
             <ArrowRight />
           </Button>
         )}

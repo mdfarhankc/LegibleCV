@@ -1,10 +1,8 @@
 from collections.abc import Iterator
-from io import BytesIO
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from pypdf import PdfReader
 
 from app.api.routes.render import DOCX_MEDIA_TYPE, download_filename
 from app.core.security import TokenVerifier
@@ -15,6 +13,7 @@ from tests.helpers import (
     UnreachableJWKClient,
     docx_text,
     make_token,
+    pdf_reader,
     pdf_text,
 )
 
@@ -40,7 +39,7 @@ def test_preview_reports_the_pdf_page_count(
     resume_data["options"] = {"page_size": page_size}
     preview = client.post("/v1/render/preview", json=resume_data)
     pdf = client.post("/v1/render/pdf", json=resume_data)
-    pdf_pages = len(PdfReader(BytesIO(pdf.content)).pages)
+    pdf_pages = len(pdf_reader(pdf.content).pages)
     assert pdf_pages > 1
     assert preview.headers["x-page-count"] == str(pdf_pages)
 

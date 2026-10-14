@@ -7,12 +7,11 @@ import { z } from "zod";
 import { requireFreshUser } from "@/lib/auth/dal";
 import { safeRedirectPath } from "@/lib/auth/redirect";
 import { SETTINGS_PATH } from "@/lib/auth/routes";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, type Supabase } from "@/lib/supabase/server";
 
 // I split a passkey into two steps so the browser never needs a Supabase client: the server
 // gets the challenge, the device signs it in the browser, and the server verifies the answer.
 
-type Supabase = Awaited<ReturnType<typeof createClient>>;
 type Passkeys = Supabase["auth"]["passkey"];
 // The options are standard WebAuthn JSON. Supabase's client has its own copy of the type, so I
 // return them as the browser's type, which is what reads them.

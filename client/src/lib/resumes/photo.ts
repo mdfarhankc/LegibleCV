@@ -1,8 +1,6 @@
 import "server-only";
 
-import type { createClient } from "@/lib/supabase/server";
-
-type Supabase = Awaited<ReturnType<typeof createClient>>;
+import type { Supabase } from "@/lib/supabase/server";
 
 export const PHOTO_BUCKET = "resume-photos";
 // Same cap as the bucket and the render service.

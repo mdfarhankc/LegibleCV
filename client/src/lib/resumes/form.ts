@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { COLORS } from "@/lib/resumes/colors";
+import { resumeTitleSchema } from "@/lib/resumes/schemas";
 import type { Entry, Resume, Section, SectionType } from "@/types/resume";
 
 // The editor works on a shape made for inputs: blank text is "" instead of null, and lists
@@ -20,6 +21,14 @@ export const LIMITS = {
 const SECTION_TYPES = ["text", "entries", "skills", "details", "bullets", "inline"] as const;
 const PAGE_SIZES = ["A4", "Letter"] as const;
 export const TEMPLATES = ["classic", "sidepanel", "banner"] as const;
+
+// Section types that go to the side column when their placement is automatic. The render
+// service has the same list (_SIDE_BY_DEFAULT in rendering/view.py).
+const SIDE_BY_DEFAULT: readonly string[] = ["skills", "details", "bullets", "inline"];
+
+export function isSideByDefault(type: string): boolean {
+  return SIDE_BY_DEFAULT.includes(type);
+}
 const PLACEMENTS = ["auto", "main", "side"] as const;
 
 // Save schema. Enforces the render service's size limits. Nothing is required,
@@ -141,7 +150,7 @@ const sectionSchema = z.object({
 });
 
 export const resumeFormSchema = z.object({
-  title: z.string().trim().min(1, "Give the resume a title.").max(120, "Use at most 120 characters."),
+  title: resumeTitleSchema,
   full_name: text(200),
   email: optionalEmail,
   phone: text(40),

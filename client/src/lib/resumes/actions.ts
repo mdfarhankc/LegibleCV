@@ -16,7 +16,7 @@ import {
   removeResumePhotos,
 } from "@/lib/resumes/photo";
 import { renderResume } from "@/lib/resumes/render";
-import { resumeIdSchema, resumeTitleSchema } from "@/lib/resumes/schemas";
+import { RESUME_TITLE_MAX, resumeIdSchema, resumeTitleSchema } from "@/lib/resumes/schemas";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/database";
 
@@ -93,7 +93,6 @@ export async function deleteResume(_state: FormState, formData: FormData): Promi
 export type DuplicateResult = { ok: true } | { ok: false; message: string };
 
 const COPY_SUFFIX = " (copy)";
-const MAX_TITLE_LENGTH = 120;
 
 // Copies a resume as it is stored. The limit trigger applies to the copy like any new resume.
 export async function duplicateResume(id: string): Promise<DuplicateResult> {
@@ -115,7 +114,7 @@ export async function duplicateResume(id: string): Promise<DuplicateResult> {
   }
 
   // Keeps the copy's title inside the column's length limit.
-  const title = original.title.slice(0, MAX_TITLE_LENGTH - COPY_SUFFIX.length) + COPY_SUFFIX;
+  const title = original.title.slice(0, RESUME_TITLE_MAX - COPY_SUFFIX.length) + COPY_SUFFIX;
   const { data: copy, error } = await supabase
     .from("resumes")
     .insert({ title, data: original.data })

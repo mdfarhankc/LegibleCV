@@ -7,9 +7,13 @@ import docx
 import jwt
 from pypdf import PdfReader
 
+from app.schemas.resume import Resume
+
 FIXTURE = Path(__file__).parent / "fixtures" / "sample_resume.json"
 KID = "test-key"
-JWKS_URL = "https://example.supabase.co/auth/v1/.well-known/jwks.json"
+SUPABASE_URL = "https://example.supabase.co"
+JWKS_URL = f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+TWO_COLUMN = ["sidepanel", "banner"]
 
 # Strings that must appear, in this order, in every output format for the sample fixture.
 ORDERED_MARKERS = [
@@ -32,8 +36,16 @@ ORDERED_MARKERS = [
 ]
 
 
+def with_options(data: dict[str, Any], **options: Any) -> Resume:
+    return Resume.model_validate({**data, "options": options})
+
+
+def pdf_reader(content: bytes) -> PdfReader:
+    return PdfReader(BytesIO(content))
+
+
 def pdf_text(content: bytes) -> str:
-    return "\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(content)).pages)
+    return "\n".join(page.extract_text() or "" for page in pdf_reader(content).pages)
 
 
 def docx_text(content: bytes) -> str:

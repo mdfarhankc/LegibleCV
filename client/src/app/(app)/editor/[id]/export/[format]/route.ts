@@ -1,16 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { toFormValues, toResume } from "@/lib/resumes/form";
-import { canDownload } from "@/lib/resumes/formats";
+import { canDownload, isDownloadFormat } from "@/lib/resumes/formats";
 import { getResume } from "@/lib/resumes/queries";
 import { renderResume } from "@/lib/resumes/render";
-
-const FORMATS = ["pdf", "docx"] as const;
-type Format = (typeof FORMATS)[number];
-
-function isFormat(value: string): value is Format {
-  return FORMATS.includes(value as Format);
-}
 
 // Download link target. Renders the saved resume, so the file matches what autosave stored.
 export async function GET(
@@ -18,7 +11,7 @@ export async function GET(
   { params }: RouteContext<"/editor/[id]/export/[format]">,
 ) {
   const { id, format } = await params;
-  if (!isFormat(format)) {
+  if (!isDownloadFormat(format)) {
     notFound();
   }
   // getResume() checks the session, and RLS returns nothing for someone else's resume.

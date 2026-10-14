@@ -4,16 +4,13 @@ from typing import Any
 
 import pytest
 from PIL import Image
-from pypdf import PdfReader
 
 from app.core.url_fetcher import ResumeURLFetcher
 from app.rendering.html import FONTS_DIR, render_html, render_pdf
 from app.rendering.word import render_docx
 from app.schemas.fields import PHOTO_MAX_BYTES, PHOTO_PREFIX
 from app.schemas.resume import Resume
-from tests.helpers import ORDERED_MARKERS, assert_in_order, docx_text
-
-TWO_COLUMN = ["sidepanel", "banner"]
+from tests.helpers import ORDERED_MARKERS, TWO_COLUMN, assert_in_order, docx_text, pdf_reader
 
 
 def jpeg_bytes(size: int = 16) -> bytes:
@@ -37,7 +34,7 @@ def with_photo(data: dict[str, Any], photo: str | None, template: str) -> Resume
 
 def has_image(pdf: bytes) -> bool:
     # Every page lists the document's shared images, so this is a yes or no, not a count.
-    return any(len(page.images) > 0 for page in PdfReader(BytesIO(pdf)).pages)
+    return any(len(page.images) > 0 for page in pdf_reader(pdf).pages)
 
 
 def test_photo_is_optional(resume: Resume) -> None:

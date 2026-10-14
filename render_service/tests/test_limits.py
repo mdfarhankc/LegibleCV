@@ -1,15 +1,12 @@
 import json
 from collections.abc import Iterator
-from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.core.rate_limit import RateLimiter
-from app.core.security import AuthenticatedUser
-from app.dependencies import get_current_user
 from app.main import create_app
-from tests.conftest import make_settings
+from tests.conftest import make_client, make_settings
 
 SMALL = {"full_name": "A", "email": "a@example.com"}
 
@@ -20,12 +17,6 @@ class FakeClock:
 
     def __call__(self) -> float:
         return self.now
-
-
-def make_client(user_id: str = "user-1", **settings: Any) -> TestClient:
-    app = create_app(make_settings(**settings))
-    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(id=user_id)
-    return TestClient(app)
 
 
 def test_allows_up_to_the_limit_then_says_how_long_to_wait() -> None:
