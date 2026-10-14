@@ -5,9 +5,9 @@ import { useActionState, useState } from "react";
 
 import { AuthCard } from "@/components/auth/auth-card";
 import { FormField } from "@/components/form-field";
+import { SignInSubmit } from "@/components/auth/sign-in-busy";
 import { FormMessage } from "@/components/form-message";
 import { PasswordField } from "@/components/password-field";
-import { Button } from "@/components/ui/button";
 import { login } from "@/lib/auth/actions";
 import { FORGOT_PASSWORD_PATH, SIGNUP_PATH } from "@/lib/auth/routes";
 
@@ -19,7 +19,7 @@ type LoginFormProps = {
 const linkClass = "text-foreground underline underline-offset-4";
 
 export function LoginForm({ next, notice }: LoginFormProps) {
-  const [state, action, pending] = useActionState(login, undefined);
+  const [state, action] = useActionState(login, undefined);
   // Controlled, so the email survives the form reset React does after an action.
   const [email, setEmail] = useState("");
 
@@ -60,9 +60,7 @@ export function LoginForm({ next, notice }: LoginFormProps) {
           Forgot your password?
         </Link>
         <FormMessage state={state ?? (notice ? { message: notice } : undefined)} />
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "Logging in..." : "Log in"}
-        </Button>
+        <SignInSubmit label="Log in" pendingLabel="Logging in..." />
       </form>
     </AuthCard>
   );

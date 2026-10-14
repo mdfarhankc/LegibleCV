@@ -5,15 +5,15 @@ import { useActionState, useState } from "react";
 
 import { AuthCard } from "@/components/auth/auth-card";
 import { FormField } from "@/components/form-field";
+import { SignInSubmit } from "@/components/auth/sign-in-busy";
 import { FormMessage } from "@/components/form-message";
 import { PasswordField } from "@/components/password-field";
-import { Button } from "@/components/ui/button";
 import { signup } from "@/lib/auth/actions";
 import { LOGIN_PATH } from "@/lib/auth/routes";
 import { PRIVACY_PATH, TERMS_PATH } from "@/lib/site";
 
 export function SignupForm() {
-  const [state, action, pending] = useActionState(signup, undefined);
+  const [state, action] = useActionState(signup, undefined);
   // Controlled, so they survive the form reset React does after an action.
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -72,9 +72,7 @@ export function SignupForm() {
           errors={state?.fieldErrors?.password}
         />
         <FormMessage state={state} />
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "Creating account..." : "Sign up"}
-        </Button>
+        <SignInSubmit label="Sign up" pendingLabel="Creating account..." />
         <p className="text-center text-sm text-muted-foreground">
           By creating an account you agree to the{" "}
           <Link href={TERMS_PATH} className="text-foreground underline underline-offset-4">

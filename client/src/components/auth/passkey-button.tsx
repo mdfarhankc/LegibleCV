@@ -3,6 +3,7 @@
 import { KeyRound } from "lucide-react";
 import { useState, useTransition } from "react";
 
+import { useOtherSignInBusy } from "@/components/auth/sign-in-busy";
 import { Button } from "@/components/ui/button";
 import { finishPasskeySignIn, startPasskeySignIn } from "@/lib/auth/passkey-actions";
 import {
@@ -17,6 +18,7 @@ const FAILED = "Passkey sign-in didn't complete. Try again or use another way to
 export function PasskeyButton({ next }: { next?: string }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const otherBusy = useOtherSignInBusy("passkey", pending);
 
   function signIn() {
     if (!passkeysSupported()) {
@@ -45,7 +47,7 @@ export function PasskeyButton({ next }: { next?: string }) {
 
   return (
     <div className="grid gap-2">
-      <Button type="button" variant="outline" className="w-full" disabled={pending} onClick={signIn}>
+      <Button type="button" variant="outline" className="w-full" disabled={pending || otherBusy} onClick={signIn}>
         <KeyRound />
         {pending ? "Waiting for your passkey..." : "Sign in with a passkey"}
       </Button>

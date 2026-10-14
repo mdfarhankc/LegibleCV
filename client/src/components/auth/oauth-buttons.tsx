@@ -3,6 +3,7 @@
 import { LoaderCircle } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
+import { useOtherSignInBusy } from "@/components/auth/sign-in-busy";
 import { Button } from "@/components/ui/button";
 import { signInWithProvider } from "@/lib/auth/actions";
 import type { OAuthProvider } from "@/lib/auth/schemas";
@@ -46,6 +47,7 @@ const PROVIDERS: { id: OAuthProvider; label: string; icon: () => React.JSX.Eleme
 // Reads the form's status, so it has to be rendered inside the form.
 function ProviderButtons() {
   const { pending, data } = useFormStatus();
+  const otherBusy = useOtherSignInBusy("oauth", pending);
   const chosen = pending ? data?.get("provider") : null;
 
   return PROVIDERS.map(({ id, label, icon: Icon }) => (
@@ -56,7 +58,7 @@ function ProviderButtons() {
       value={id}
       variant="outline"
       className="w-full"
-      disabled={pending}
+      disabled={pending || otherBusy}
     >
       {chosen === id ? <LoaderCircle className="motion-safe:animate-spin" /> : <Icon />}
       {chosen === id ? "Connecting..." : label}
