@@ -78,6 +78,9 @@ export default function TermsPage() {
         come from using it or from being unable to use it.
       </p>
 
+      <h2>Governing law</h2>
+      <p>These terms are governed by the laws of India.</p>
+
       <h2>Changes</h2>
       <p>
         These terms may be updated. The date at the top shows the latest version, and continuing
