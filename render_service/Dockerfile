@@ -13,7 +13,7 @@ RUN apt-get update \
         libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:0.11.14 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.13.1 /uv /uvx /bin/
 
 WORKDIR /app
 
