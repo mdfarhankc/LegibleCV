@@ -8,14 +8,9 @@ from app.rendering.styles import BANNER, CLASSIC, PALETTES, SIDE_PANEL, style_fo
 from app.rendering.view import build_view
 from app.rendering.word import render_docx
 from app.schemas.resume import Color, Resume
-from tests.helpers import pdf_text
+from tests.helpers import TWO_COLUMN, pdf_text, with_options
 
-TWO_COLUMN = ["sidepanel", "banner"]
 COLORS = list(get_args(Color))
-
-
-def with_options(data: dict[str, Any], **options: Any) -> Resume:
-    return Resume.model_validate({**data, "options": options})
 
 
 def luminance(hex_color: str) -> float:

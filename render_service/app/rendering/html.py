@@ -21,6 +21,7 @@ _env = Environment(
     lstrip_blocks=True,
 )
 _env.globals["icon"] = icon
+_env.globals["separator"] = SEPARATOR
 
 
 def render_html(resume: Resume) -> str:
@@ -28,7 +29,6 @@ def render_html(resume: Resume) -> str:
     return _env.get_template(f"{options.template}.html").render(
         view=build_view(resume),
         style=style_for(options.template, options.color),
-        separator=SEPARATOR,
     )
 
 
