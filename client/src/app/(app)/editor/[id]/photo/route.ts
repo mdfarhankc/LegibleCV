@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { requireUser } from "@/lib/auth/dal";
 import { loadPhoto } from "@/lib/resumes/photo";
-import { getResume } from "@/lib/resumes/queries";
+import { getResumePhotoPath } from "@/lib/resumes/queries";
 import { createClient } from "@/lib/supabase/server";
 
 // The resume's photo, for the thumbnail in the editor. The bucket is private, so it's served
@@ -10,12 +10,12 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(_request: Request, { params }: RouteContext<"/editor/[id]/photo">) {
   const { id } = await params;
   const user = await requireUser();
-  const resume = await getResume(id);
-  if (!resume?.photoPath) {
+  const photoPath = await getResumePhotoPath(id);
+  if (!photoPath) {
     notFound();
   }
 
-  const photo = await loadPhoto(await createClient(), user.id, resume.photoPath);
+  const photo = await loadPhoto(await createClient(), user.id, photoPath);
   if (!photo) {
     notFound();
   }

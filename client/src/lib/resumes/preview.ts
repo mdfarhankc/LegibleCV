@@ -1,11 +1,10 @@
 import { z } from "zod";
 
 import { type ColorName, COLORS } from "@/lib/resumes/colors";
+import { isSideByDefault, TEMPLATES, type TemplateName } from "@/lib/resumes/form";
 
 // What the dashboard thumbnail draws. Built from stored JSON, which is not trusted to match
 // the Resume type, so everything is parsed loosely and bad values fall back to empty.
-
-const TEMPLATES = ["classic", "sidepanel", "banner"] as const;
 
 export type PreviewRow = {
   text: string;
@@ -20,10 +19,8 @@ export type PreviewSection = {
   rows: PreviewRow[];
 };
 
-export type PreviewTemplate = (typeof TEMPLATES)[number];
-
 export type ResumePreview = {
-  template: PreviewTemplate;
+  template: TemplateName;
   color: ColorName;
   name: string;
   contact: string[];
@@ -31,9 +28,6 @@ export type ResumePreview = {
   // Only filled on the two-column templates.
   sideSections: PreviewSection[];
 };
-
-// Section types that go to the side column when their placement is automatic.
-const SIDE_BY_DEFAULT = ["skills", "details", "bullets", "inline"];
 
 const MAX_SECTIONS = 5;
 const MAX_ROWS = 7;
@@ -86,6 +80,12 @@ const resumeSchema = z
   });
 
 type StoredSection = z.infer<typeof sectionSchema>;
+export type StoredResume = z.infer<typeof resumeSchema>;
+
+// Parsed once per row, then read by both functions below.
+export function parseStoredResume(data: unknown): StoredResume {
+  return resumeSchema.parse(data ?? {});
+}
 
 // Rich text uses **bold**; the thumbnail is too small for it to matter.
 const plain = (value: string) => value.replaceAll("**", "");
@@ -158,17 +158,15 @@ function isSide(section: StoredSection): boolean {
   if (section.placement === "side") {
     return true;
   }
-  return section.placement !== "main" && SIDE_BY_DEFAULT.includes(section.type);
+  return section.placement !== "main" && isSideByDefault(section.type);
 }
 
 // The render service needs a name and an email, so a resume without them can't be downloaded yet.
-export function canExportResume(data: unknown): boolean {
-  const resume = resumeSchema.parse(data ?? {});
+export function canExportResume(resume: StoredResume): boolean {
   return Boolean(resume.full_name.trim() && resume.email.trim());
 }
 
-export function buildResumePreview(data: unknown): ResumePreview {
-  const resume = resumeSchema.parse(data ?? {});
+export function buildResumePreview(resume: StoredResume): ResumePreview {
 
   const template = resume.options.template;
   const classic = template === "classic";

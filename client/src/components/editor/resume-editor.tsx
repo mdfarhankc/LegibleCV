@@ -14,17 +14,14 @@ import { Button } from "@/components/ui/button";
 import { DEFAULT_SIGNED_IN_PATH } from "@/lib/auth/routes";
 import { resumeFormSchema, type ResumeFormValues } from "@/lib/resumes/form";
 import { downloadResume } from "@/lib/resumes/download";
-import { canDownload, type DownloadFormat } from "@/lib/resumes/formats";
+import { canDownload, DOWNLOAD_FORMATS, type DownloadFormat } from "@/lib/resumes/formats";
 
 type ResumeEditorProps = {
   resumeId: string;
   initialValues: ResumeFormValues;
 };
 
-const DOWNLOADS = [
-  { format: "pdf", label: "PDF" },
-  { format: "docx", label: "Word" },
-] as const;
+const DOWNLOAD_LABELS: Record<DownloadFormat, string> = { pdf: "PDF", docx: "Word" };
 
 type DownloadsProps = {
   resumeId: string;
@@ -38,7 +35,7 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
     control,
     name: ["full_name", "email", "template"],
   });
-  const downloads = DOWNLOADS.filter(({ format }) => canDownload(format, template));
+  const downloads = DOWNLOAD_FORMATS.filter((format) => canDownload(format, template));
   const [preparing, setPreparing] = useState<DownloadFormat | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +55,7 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
   return (
     <>
       <div className="flex items-center gap-2">
-        {downloads.map(({ format, label }) => (
+        {downloads.map((format) => (
           <Button
             key={format}
             type="button"
@@ -72,7 +69,7 @@ function Downloads({ resumeId, control, saved }: DownloadsProps) {
             ) : (
               <Download />
             )}
-            {preparing === format ? `Preparing ${label}...` : label}
+            {preparing === format ? `Preparing ${DOWNLOAD_LABELS[format]}...` : DOWNLOAD_LABELS[format]}
           </Button>
         ))}
       </div>

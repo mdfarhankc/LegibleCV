@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SkillsFields } from "@/components/editor/skills-fields";
-import type { ResumeFormValues, SectionValues } from "@/lib/resumes/form";
+import { isSideByDefault, type ResumeFormValues, type SectionValues } from "@/lib/resumes/form";
 
 const TYPE_LABELS: Record<SectionValues["type"], string> = {
   text: "Text",
@@ -26,11 +26,8 @@ const TYPE_LABELS: Record<SectionValues["type"], string> = {
   inline: "One-line list",
 };
 
-// What "Automatic" does for each type on the two-column templates.
-const SIDE_BY_DEFAULT: SectionValues["type"][] = ["skills", "details", "bullets", "inline"];
-
 function placementOptions(type: SectionValues["type"]) {
-  const automatic = SIDE_BY_DEFAULT.includes(type) ? "side" : "main";
+  const automatic = isSideByDefault(type) ? "side" : "main";
   return [
     { value: "auto", label: `Automatic (${automatic} column)` },
     { value: "main", label: "Main column" },

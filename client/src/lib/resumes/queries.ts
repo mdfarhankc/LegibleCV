@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth/dal";
 import {
   buildResumePreview,
   canExportResume,
+  parseStoredResume,
   type ResumePreview,
 } from "@/lib/resumes/preview";
 import { resumeIdSchema } from "@/lib/resumes/schemas";
@@ -42,7 +43,8 @@ export async function listResumes(): Promise<ResumeListItem[]> {
   }
   // Only the small preview leaves the server, not the whole resume.
   return data.map((row) => {
-    const preview = buildResumePreview(row.data);
+    const stored = parseStoredResume(row.data);
+    const preview = buildResumePreview(stored);
     return {
       id: row.id,
       title: row.title,
@@ -50,7 +52,7 @@ export async function listResumes(): Promise<ResumeListItem[]> {
       preview,
       photoUrl:
         row.photo_path && preview.template !== "classic" ? `/editor/${row.id}/photo` : null,
-      canExport: canExportResume(row.data),
+      canExport: canExportResume(stored),
     };
   });
 }
@@ -82,6 +84,25 @@ export async function getResume(id: string): Promise<StoredResume | null> {
     data: data.data as unknown as Resume,
     photoPath: data.photo_path,
   };
+}
+
+// Only the photo path, for the photo route. Null for no photo, a bad id, or someone else's resume.
+export async function getResumePhotoPath(id: string): Promise<string | null> {
+  await requireUser();
+  if (!resumeIdSchema.safeParse(id).success) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("resumes")
+    .select("photo_path")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    throw new Error("Could not load the photo", { cause: error });
+  }
+  return data?.photo_path ?? null;
 }
 
 // Null means unlimited.

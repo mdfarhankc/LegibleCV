@@ -5,7 +5,7 @@ import { PasswordForm } from "@/components/auth/password-form";
 import { updatePassword } from "@/lib/auth/account-actions";
 import { requireUser } from "@/lib/auth/dal";
 import { OAUTH_PROVIDER_LABELS, OAUTH_PROVIDERS } from "@/lib/auth/schemas";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, type Supabase } from "@/lib/supabase/server";
 
 import { ChangeEmailForm } from "./change-email-form";
 import { type ConnectedAccount, ConnectedAccountsForm } from "./connected-accounts-form";
@@ -35,8 +35,6 @@ function Section({ title, description, children }: SectionProps) {
 }
 
 const dateFormat = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
-
-type Supabase = Awaited<ReturnType<typeof createClient>>;
 
 // Null when the list couldn't be read.
 async function listConnectedAccounts(supabase: Supabase): Promise<ConnectedAccount[] | null> {
