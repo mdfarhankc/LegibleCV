@@ -9,12 +9,17 @@ from app.config import Settings, get_settings
 from app.core.rate_limit import RateLimiter
 from app.core.security import TokenVerifier
 
+# The same in every environment, so constants rather than settings. Bump the version together
+# with pyproject.toml.
+APP_TITLE = "MakeMyResume Render Service"
+APP_VERSION = "0.1.0"
+
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(
-        title="MakeMyResume Render Service",
-        version="0.1.0",
+        title=APP_TITLE,
+        version=APP_VERSION,
         docs_url="/docs" if settings.docs_enabled else None,
         redoc_url=None,
         openapi_url="/openapi.json" if settings.docs_enabled else None,
