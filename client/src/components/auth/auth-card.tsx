@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { PasskeyButton } from "@/components/auth/passkey-button";
+import { SignInBusyProvider } from "@/components/auth/sign-in-busy";
 import {
   Card,
   CardContent,
@@ -35,6 +36,7 @@ export function AuthCard({ title, description, children, footer, oauth }: AuthCa
 
       {(children || oauth) && (
         <CardContent className="grid gap-6">
+          <SignInBusyProvider>
           {oauth && (
             <>
               <div className="grid gap-2">
@@ -49,6 +51,7 @@ export function AuthCard({ title, description, children, footer, oauth }: AuthCa
             </>
           )}
           {children}
+          </SignInBusyProvider>
         </CardContent>
       )}
 
