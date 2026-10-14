@@ -60,7 +60,7 @@ src/
 Two files in `src/types` are generated. Don't edit them by hand.
 
 - `api.ts` comes from the render service. Run `bun run types:api` after changing its Pydantic models (the service must be running).
-- `database.ts` comes from the Supabase schema. Run `bun run types:db` after pushing a migration (needs `bunx supabase login` and a linked project).
+- `database.ts` comes from the Supabase schema. Run `bun run types:db` after applying a migration to the local stack (it must be running).
 
 ## Template colors
 

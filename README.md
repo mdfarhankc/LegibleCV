@@ -57,7 +57,24 @@ You need Docker, [bun](https://bun.sh) and a Supabase project.
 
    It runs at http://localhost:3000.
 
-## Supabase setup
+## Local database
+
+Development runs against a local Supabase stack in Docker, not the live project.
+
+```bash
+bunx supabase start     # first run downloads the images
+bunx supabase status    # prints the local URL and keys for client/.env.local
+bunx supabase stop
+```
+
+- Migrations in `supabase/migrations` are applied when the stack starts. `bunx supabase db reset` rebuilds the database from them.
+- Emails are not sent. They show up in the local inbox at http://127.0.0.1:54324.
+- The local dashboard is at http://127.0.0.1:54323.
+- Google and GitHub sign-in are not configured locally. Sign up with an email address.
+
+To change the schema: `bunx supabase migration new <name>`, write the SQL, `bunx supabase db reset`, then `bun run types:db` in `client/`. `bunx supabase db push` applies it to the live project.
+
+## Supabase setup (live project)
 
 Apply the migrations to your project:
 
