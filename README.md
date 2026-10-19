@@ -1,4 +1,4 @@
-# MakeMyResume
+# LegibleCV
 
 A resume builder. You fill in your details once, see a live preview while you type, and download the result as a PDF or a Word document.
 

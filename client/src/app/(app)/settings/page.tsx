@@ -5,6 +5,7 @@ import { PasswordForm } from "@/components/auth/password-form";
 import { updatePassword } from "@/lib/auth/account-actions";
 import { requireUser } from "@/lib/auth/dal";
 import { OAUTH_PROVIDER_LABELS, OAUTH_PROVIDERS } from "@/lib/auth/schemas";
+import { SITE } from "@/lib/site";
 import { createClient, type Supabase } from "@/lib/supabase/server";
 
 import { ChangeEmailForm } from "./change-email-form";
@@ -86,7 +87,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
       {failed && (
         <p role="alert" className="pb-8 text-sm text-destructive">
           That didn&apos;t complete. The link may have expired, or that account is already connected
-          to a different MakeMyResume account.
+          to a different {SITE.name} account.
         </p>
       )}
 
