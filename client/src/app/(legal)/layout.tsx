@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-import { PRIVACY_PATH, SITE, TERMS_PATH } from "@/lib/site";
+import { BrandHeader } from "@/components/brand-header";
+import { PRIVACY_PATH, TERMS_PATH } from "@/lib/site";
 
 // Long-form text pages. The child selectors style plain headings, paragraphs and lists, so the
 // pages themselves stay readable as text.
@@ -15,14 +15,7 @@ const prose =
 export default function LegalLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col">
-      <header className="mx-auto flex h-16 w-full max-w-6xl items-center px-5">
-        <Link href="/" className="font-heading text-lg font-semibold tracking-tight">
-          {SITE.name}
-        </Link>
-        <div className="ml-auto">
-          <ThemeToggle />
-        </div>
-      </header>
+      <BrandHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10">
         <article className={prose}>{children}</article>

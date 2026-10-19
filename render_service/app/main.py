@@ -11,7 +11,7 @@ from app.core.security import TokenVerifier
 
 # The same in every environment, so constants rather than settings. Bump the version together
 # with pyproject.toml.
-APP_TITLE = "MakeMyResume Render Service"
+APP_TITLE = "LegibleCV Render Service"
 APP_VERSION = "0.1.0"
 
 

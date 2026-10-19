@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { SITE } from "@/lib/site";
 
 import "./globals.css";
 
@@ -23,8 +24,8 @@ const display = Bricolage_Grotesque({
 
 export const metadata: Metadata = {
   title: {
-    default: "MakeMyResume",
-    template: "%s | MakeMyResume",
+    default: SITE.name,
+    template: `%s | ${SITE.name}`,
   },
   description: "Build ATS-friendly resumes and export them as PDF or Word.",
 };

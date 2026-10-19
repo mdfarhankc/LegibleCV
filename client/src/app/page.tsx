@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import { DEFAULT_SIGNED_IN_PATH, LOGIN_PATH, SIGNUP_PATH } from "@/lib/auth/routes";
-import { PRIVACY_PATH, TERMS_PATH } from "@/lib/site";
+import { PRIVACY_PATH, SITE, TERMS_PATH } from "@/lib/site";
 
 const HERO_FACTS = ["Selectable text", "One-column layout", "PDF and Word"];
 
@@ -91,7 +91,7 @@ export default async function HomePage() {
       <header className="sticky top-0 z-40 border-b border-transparent bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center px-5">
           <Link href="/" className="font-heading text-lg font-semibold tracking-tight">
-            MakeMyResume
+            {SITE.name}
           </Link>
           <div className="ml-auto flex items-center gap-1">
             {!signedIn && (
@@ -126,7 +126,7 @@ export default async function HomePage() {
               </h1>
               <p className="mt-7 max-w-[34rem] text-lg leading-relaxed text-muted-foreground sm:text-xl sm:leading-relaxed">
                 Most applications pass through an applicant tracking system before a person opens
-                them. MakeMyResume gives you a PDF built for that step, and a Word file you can
+                them. {SITE.name} gives you a PDF built for that step, and a Word file you can
                 still edit by hand.
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
@@ -271,7 +271,7 @@ export default async function HomePage() {
 
       <footer className="border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-5 py-8 text-sm text-muted-foreground">
-          <span className="font-heading text-base font-semibold text-foreground">MakeMyResume</span>
+          <span className="font-heading text-base font-semibold text-foreground">{SITE.name}</span>
           <span>Resumes that software can read.</span>
           <nav className="flex flex-wrap gap-6 sm:ml-auto">
             <Link href={PRIVACY_PATH} className="hover:text-foreground">
