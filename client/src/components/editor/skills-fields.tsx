@@ -1,9 +1,10 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
 import { TextField } from "@/components/editor/fields";
+import { ItemControls } from "@/components/editor/item-controls";
 import { Button } from "@/components/ui/button";
 import { LIMITS, type ResumeFormValues } from "@/lib/resumes/form";
 
@@ -31,16 +32,16 @@ export function SkillsFields({ sectionIndex }: { sectionIndex: number }) {
             label="Skills, separated by commas"
             placeholder="PostgreSQL, MySQL, Redis"
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-destructive sm:mt-[1.6rem]"
-            onClick={() => groups.remove(index)}
-            aria-label={`Remove group ${index + 1}`}
-          >
-            <Trash2 />
-          </Button>
+          <div className="sm:mt-[1.6rem] sm:pt-0.5">
+            <ItemControls
+              label={`group ${index + 1}`}
+              isFirst={index === 0}
+              isLast={index === groups.fields.length - 1}
+              onMoveUp={() => groups.move(index, index - 1)}
+              onMoveDown={() => groups.move(index, index + 1)}
+              onRemove={() => groups.remove(index)}
+            />
+          </div>
         </div>
       ))}
       <Button
