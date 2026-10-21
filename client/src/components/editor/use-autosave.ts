@@ -60,12 +60,18 @@ export function useAutosave(resumeId: string, form: UseFormReturn<ResumeFormValu
       if (timer.current) {
         clearTimeout(timer.current);
       }
-      timer.current = setTimeout(() => void save(), DELAY_MS);
+      timer.current = setTimeout(() => {
+        timer.current = null;
+        void save();
+      }, DELAY_MS);
     });
     return () => {
       subscription.unsubscribe();
+      // In-app navigation doesn't fire beforeunload, so I save a pending change here.
       if (timer.current) {
         clearTimeout(timer.current);
+        timer.current = null;
+        void save();
       }
     };
   }, [form, save]);
