@@ -2,8 +2,10 @@
 export const SITE = {
   name: "LegibleCV",
   operator: "Mohammed Farhan K C",
-  contactEmail: "kcfarhan123@gmail.com",
+  contactEmail: "legiblecv@gmail.com",
 } as const;
+
+export const SITE_DESCRIPTION = "Build ATS-friendly resumes and export them as PDF or Word.";
 
 export const PRIVACY_PATH = "/privacy";
 export const TERMS_PATH = "/terms";

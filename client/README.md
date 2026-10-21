@@ -10,7 +10,7 @@ cp .env.example .env.local
 bun dev
 ```
 
-Fill `.env.local` with your Supabase project URL and publishable key. `NEXT_PUBLIC_API_URL` points to the render service (http://localhost:8000 when it runs with Docker Compose).
+Fill `.env.local` with your Supabase project URL and publishable key. `RENDER_SERVICE_URL` points to the render service (http://localhost:8000 when it runs with Docker Compose), and `SITE_URL` is the app's own address. All four are checked when the server starts.
 
 The app runs at http://localhost:3000. The preview and the downloads need the render service to be running.
 
