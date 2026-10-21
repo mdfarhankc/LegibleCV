@@ -180,9 +180,9 @@ export type PreviewResult =
   // `unavailable` means the render service didn't answer and the preview should try again.
   | { ok: false; message: string; unavailable?: boolean };
 
-// The PDF embeds the template's font. The preview frame loads the same fonts, so line breaks match.
-const PREVIEW_FONT_LINK =
-  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap">';
+// The templates load their fonts from "fonts/*.ttf", the same files the PDF embeds, so line
+// breaks match. public/fonts holds copies of render_service/app/static/fonts; keep them in sync.
+const PREVIEW_BASE = '<base href="/">';
 
 // Renders the form as it is right now, saved or not.
 export async function renderPreview(values: unknown): Promise<PreviewResult> {
@@ -214,7 +214,7 @@ export async function renderPreview(values: unknown): Promise<PreviewResult> {
   const html = await result.response.text();
   return {
     ok: true,
-    html: html.replace("<head>", `<head>${PREVIEW_FONT_LINK}`),
+    html: html.replace("<head>", `<head>${PREVIEW_BASE}`),
     pageCount: Number.isInteger(pageCount) && pageCount > 0 ? pageCount : null,
   };
 }
