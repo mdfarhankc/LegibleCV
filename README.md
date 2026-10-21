@@ -88,10 +88,12 @@ In the dashboard, under Authentication:
 
 - URL Configuration: set the Site URL to `http://localhost:3000` and add `http://localhost:3000/**` to the redirect URLs.
 - Emails: the default templates work as they are. Their links come back to `/auth/callback`, which only works in the browser the request was made from.
-- Emails with custom SMTP (optional): templates can be edited once SMTP is set up. Pointing the links at `/auth/confirm` makes them work in any browser:
-  - Confirm signup: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-  - Reset password: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`
-  - Change email address: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change`
+- Emails with custom SMTP (optional): templates can be edited once SMTP is set up. The ones in `supabase/templates` link to `/auth/confirm`, which makes them work in any browser. Paste each file into its template, with the subject from `supabase/config.toml`:
+  - Confirm signup: `confirmation.html`
+  - Reset password: `recovery.html`
+  - Change email address: `email_change.html`
+
+  The local stack uses the same files, so a change can be checked in the local inbox first. The templates say a link lasts 1 hour, which is the default email OTP expiry; change both together.
 - Passkeys (optional, beta in Supabase): enable them and set the Relying Party ID to the site's domain (`localhost` in development) and the origin to its address (`http://localhost:3000`). A passkey only works on the domain it was made for, so the values change at deployment.
 - Sign In / Providers: turn on manual linking if you want users to connect Google or GitHub to an existing account from Settings. Disconnecting works without it.
 - Providers: enable Google and GitHub if you want social login. Both use `https://<your-project-ref>.supabase.co/auth/v1/callback` as the callback URL.
