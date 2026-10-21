@@ -10,7 +10,7 @@ import { createClient, type Supabase } from "@/lib/supabase/server";
 
 import { ChangeEmailForm } from "./change-email-form";
 import { type ConnectedAccount, ConnectedAccountsForm } from "./connected-accounts-form";
-import { DeleteAccountForm } from "./delete-account-form";
+import { DeleteAccountButton } from "./delete-account-button";
 import { OtherDevicesForm } from "./other-devices-form";
 import { type PasskeyRow, PasskeysForm } from "./passkeys-form";
 import { ProfileForm } from "./profile-form";
@@ -150,12 +150,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         <OtherDevicesForm />
       </Section>
 
-      <Section
-        title="Delete account"
-        description="Permanently deletes your account and every resume in it. This can't be undone."
-      >
-        <DeleteAccountForm email={user.email} />
-      </Section>
+      <section className="mt-4 grid gap-4 rounded-xl border border-destructive/40 p-5 sm:p-6">
+        <h2 className="font-medium text-destructive">Danger zone</h2>
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-12">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium">Delete account</h3>
+            <p className="max-w-prose text-sm text-muted-foreground">
+              Permanently deletes your account and every resume in it. This can&apos;t be undone.
+            </p>
+          </div>
+          <DeleteAccountButton email={user.email} />
+        </div>
+      </section>
     </div>
   );
 }
