@@ -22,7 +22,9 @@ export default async function DashboardPage() {
   const atLimit = limit !== null && resumes.length >= limit;
 
   return (
-    <div className={`${resumeFont.variable} ${bannerFont.variable} mx-auto grid w-full max-w-6xl content-start gap-8 px-4 py-8`}>
+    <div
+      className={`${resumeFont.variable} ${bannerFont.variable} mx-auto grid w-full max-w-6xl flex-1 gap-8 px-4 py-8 ${resumes.length === 0 ? "grid-rows-[auto_1fr]" : "content-start"}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="font-heading text-3xl font-semibold tracking-tight">Your resumes</h1>
@@ -35,11 +37,14 @@ export default async function DashboardPage() {
       </div>
 
       {resumes.length === 0 ? (
-        <div className="rounded-xl border border-dashed px-6 py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-16 text-center">
           <h2 className="font-heading text-xl font-semibold">No resumes yet</h2>
           <p className="mx-auto mt-2 max-w-sm text-muted-foreground">
             Create your first one. It starts with the details from your profile already filled in.
           </p>
+          <div className="mt-6">
+            <NewResumeButton atLimit={atLimit} />
+          </div>
         </div>
       ) : (
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

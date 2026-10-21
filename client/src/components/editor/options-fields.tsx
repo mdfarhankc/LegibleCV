@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleCheck } from "lucide-react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
@@ -129,7 +130,13 @@ export function OptionsFields() {
                     onChange={() => field.onChange(option.value)}
                     className="peer sr-only"
                   />
-                  <div className="grid gap-2 rounded-lg border p-3 transition-colors peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:border-primary/60">
+                  <div className="relative grid gap-2 rounded-lg border p-3 transition-colors peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:border-primary/60">
+                    {field.value === option.value && (
+                      <CircleCheck
+                        aria-hidden="true"
+                        className="absolute top-2 right-2 size-5 fill-primary text-primary-foreground"
+                      />
+                    )}
                     <div className="mx-auto h-24 w-[4.25rem] overflow-hidden rounded-[2px] bg-white ring-1 ring-black/15">
                       <Diagram template={option.value} color={color} />
                     </div>

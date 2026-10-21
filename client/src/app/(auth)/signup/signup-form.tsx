@@ -23,6 +23,14 @@ export function SignupForm() {
       <AuthCard
         title="Check your email"
         description={`If ${email} can be used to sign up, a confirmation link is on its way. Open it to finish creating your account.`}
+        footer={
+          <p>
+            Already confirmed?{" "}
+            <Link href={LOGIN_PATH} className="text-foreground underline underline-offset-4">
+              Log in
+            </Link>
+          </p>
+        }
       />
     );
   }
