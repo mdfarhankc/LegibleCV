@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, MoreHorizontal, Pencil, Printer, Trash2 } from "lucide-react";
+import { Copy, Download, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
@@ -129,8 +129,8 @@ export function ResumeCard({
             {canExport ? (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <Printer />
-                  Print
+                  <Download />
+                  Download
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-32">
                   {downloads.map((format) => (
@@ -147,8 +147,8 @@ export function ResumeCard({
             ) : (
               // The files need a name and an email on the resume.
               <DropdownMenuItem disabled title="Add a name and email to the resume first.">
-                <Printer />
-                Print
+                <Download />
+                Download
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
