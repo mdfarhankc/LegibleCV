@@ -15,7 +15,7 @@ const DESTINATIONS = {
   email: DEFAULT_SIGNED_IN_PATH,
   signup: DEFAULT_SIGNED_IN_PATH,
   recovery: UPDATE_PASSWORD_PATH,
-  email_change: SETTINGS_PATH,
+  email_change: `${SETTINGS_PATH}?notice=email_change`,
 } as const;
 
 type LinkType = keyof typeof DESTINATIONS;
@@ -39,5 +39,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Changing email needs a session, and /login would bounce a signed-in user to the dashboard
+  // and lose the message.
+  if (type === "email_change") {
+    redirect(`${SETTINGS_PATH}?error=callback_failed`);
+  }
   redirect(`${LOGIN_PATH}?error=link_invalid`);
 }

@@ -73,8 +73,10 @@ async function listPasskeys(supabase: Supabase): Promise<PasskeyRow[] | null> {
 
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
   const user = await requireUser();
-  // Set by the callback route when coming back from Google, GitHub, or an email link failed.
-  const failed = (await searchParams).error === "callback_failed";
+  // Set by the callback and confirm routes.
+  const { error, notice } = await searchParams;
+  const failed = error === "callback_failed";
+  const emailConfirmed = notice === "email_change";
   const supabase = await createClient();
   const [accounts, passkeys] = await Promise.all([
     listConnectedAccounts(supabase),
@@ -88,6 +90,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         <p role="alert" className="pb-8 text-sm text-destructive">
           That didn&apos;t complete. The link may have expired, or that account is already connected
           to a different {SITE.name} account.
+        </p>
+      )}
+      {emailConfirmed && (
+        <p role="status" className="pb-8 text-sm text-muted-foreground">
+          Confirmed. If a link was also sent to your other address, open that one too. Your email
+          below changes once both are confirmed.
         </p>
       )}
 

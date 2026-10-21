@@ -66,6 +66,10 @@ Two files in `src/types` are generated. Don't edit them by hand.
 
 `src/lib/resumes/colors.ts` repeats the palette from the render service (`PALETTES` in `rendering/styles.py`), so thumbnails and the color picker can draw it. Change both together.
 
+## Template fonts
+
+`public/fonts` holds copies of the render service's fonts (`app/static/fonts`). The preview loads them from there, so it matches the PDF without asking Google or anyone else. Change both together.
+
 ## Checks
 
 ```bash

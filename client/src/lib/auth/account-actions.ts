@@ -110,12 +110,15 @@ export async function deleteAccount(
 
   const supabase = await createClient();
   // The account can't be deleted while it still owns stored files.
-  const photosRemoved = await removeAllPhotos(supabase, user.id);
-  const { error } = photosRemoved
-    ? await supabase.rpc("delete_own_account")
-    : { error: new Error("Photos could not be removed") };
-  if (error) {
+  if (!(await removeAllPhotos(supabase, user.id))) {
     return { message: "Could not delete your account. Try again." };
+  }
+  const { error } = await supabase.rpc("delete_own_account");
+  if (error) {
+    // The photos are gone by now. Resumes still render without them.
+    return {
+      message: "Your photos were removed, but your account could not be deleted. Try again.",
+    };
   }
 
   // The user no longer exists; this only clears the session cookies.
